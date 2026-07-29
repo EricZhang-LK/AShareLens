@@ -30,3 +30,33 @@ jobs:
       - name: Type check
         run: python -m mypy src
 
+  mysql:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root-test-password
+          MYSQL_DATABASE: asharelens_test
+          MYSQL_USER: asharelens
+          MYSQL_PASSWORD: asharelens-test-password
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "mysqladmin ping -h localhost -uroot -proot-test-password"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      ASHARELENS_DATABASE_URL: mysql+pymysql://asharelens:asharelens-test-password@127.0.0.1:3306/asharelens_test?charset=utf8mb4
+      ASHARELENS_TEST_DATABASE_URL: mysql+pymysql://asharelens:asharelens-test-password@127.0.0.1:3306/asharelens_test?charset=utf8mb4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install
+        run: python -m pip install -e ".[dev]"
+      - name: MySQL integration
+        run: python -m pytest -m mysql -v
