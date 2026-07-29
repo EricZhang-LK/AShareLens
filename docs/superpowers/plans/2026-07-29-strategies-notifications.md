@@ -93,11 +93,11 @@
 - Create: `src/asharelens/notifications/console.py`
 - Create: `src/asharelens/notifications/webhook.py`
 - Create: `tests/notifications/test_notifiers.py`
-- Modify: `pyproject.toml`
+- No dependency change: use the Python standard-library HTTPS client.
 
-- [ ] Test HTTPS validation, injected transport, timeout, non-2xx classification and secret-safe failures.
-- [ ] Implement Console for local preview and JSON Webhook for Feishu/WeCom/DingTalk-compatible relays.
-- [ ] Verify and commit.
+- [x] Test HTTPS validation, injected transport, timeout, non-2xx classification and secret-safe failures.
+- [x] Implement Console for local preview and JSON Webhook for Feishu/WeCom/DingTalk-compatible relays.
+- [x] Verify and commit.
 
 ### Task 8: Runner delivery executor and phase audit
 

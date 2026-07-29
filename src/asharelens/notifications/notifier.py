@@ -42,6 +42,11 @@ class NotifierPlugin(Protocol):
 
     metadata: NotifierMetadata
 
-    def send(self, message: NotificationMessage) -> DeliveryReceipt:
+    def send(
+        self,
+        message: NotificationMessage,
+        *,
+        idempotency_key: str,
+    ) -> DeliveryReceipt:
         """Deliver one message or raise `NotificationError`."""
         ...
