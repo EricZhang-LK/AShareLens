@@ -1,0 +1,20 @@
+[build-system]
+requires = ["hatchling>=1.25,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "asharelens-example-strategy"
+version = "0.1.0"
+description = "Minimal trusted Python strategy plugin for AShareLens"
+requires-python = ">=3.12,<3.14"
+license = "MIT"
+dependencies = [
+  "asharelens>=0.1.0,<0.2",
+  "pydantic>=2.8,<3",
+]
+
+[project.entry-points."asharelens.strategies"]
+example_momentum = "example_strategy:ExampleMomentumStrategy"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/example_strategy"]
