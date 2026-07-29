@@ -146,6 +146,24 @@ class SimulationRepository:
             raise SimulationAccountNotFound(account_id)
         return _account_snapshot(row)
 
+    def get_account_by_name(
+        self,
+        name: str,
+        *,
+        for_update: bool = False,
+    ) -> SimulationAccountSnapshot | None:
+        """Load a named paper account without guessing its generated ID."""
+
+        statement = select(SimulationAccountRow).where(
+            SimulationAccountRow.name == name
+        )
+        if for_update:
+            statement = statement.with_for_update().execution_options(
+                populate_existing=True
+            )
+        row = self._session.scalar(statement)
+        return _account_snapshot(row) if row is not None else None
+
     def get_run(
         self,
         account_id: str,

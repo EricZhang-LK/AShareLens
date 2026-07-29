@@ -66,14 +66,14 @@ retryable; invalid configuration and quality failures are terminal and visible.
 - Create: `src/asharelens/runner/workflows/daily_pipeline.py`
 - Create: workflow tests
 
-- [ ] Fetch a date range through ordered whole-batch provider fallback.
-- [ ] Quality-check every returned daily partition before atomic publication.
-- [ ] Load ordered published history with exact partition lineage.
-- [ ] Create or resume a named paper account, catch up missed trading sessions,
+- [x] Fetch a date range through ordered whole-batch provider fallback.
+- [x] Quality-check every returned daily partition before atomic publication.
+- [x] Load ordered published history with exact partition lineage.
+- [x] Create or resume a named paper account, catch up missed trading sessions,
   and enqueue one explainable notification for the latest new run.
-- [ ] Classify no-data, provider outages, quality failures and bad configuration
+- [x] Classify no-data, provider outages, quality failures and bad configuration
   into deterministic no-op, retryable or permanent outcomes.
-- [ ] Verify tests, lint and types; commit.
+- [x] Verify tests, lint and types; commit.
 
 ### Task 4: Production composition and operator commands
 
