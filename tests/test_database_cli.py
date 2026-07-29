@@ -2,6 +2,7 @@ from pathlib import Path
 
 from alembic import command
 from alembic.config import Config
+from alembic.script import ScriptDirectory
 from typer.testing import CliRunner
 
 from asharelens.cli import app
@@ -15,13 +16,16 @@ def test_database_check_reports_current_migration_revision(
     database_url = f"sqlite+pysqlite:///{database_path.as_posix()}"
     monkeypatch.setenv("ASHARELENS_DATABASE_URL", database_url)
     project_root = Path(__file__).parents[1]
-    command.upgrade(Config(str(project_root / "alembic.ini")), "head")
+    config = Config(str(project_root / "alembic.ini"))
+    command.upgrade(config, "head")
+    head_revision = ScriptDirectory.from_config(config).get_current_head()
+    assert head_revision is not None
 
     result = CliRunner().invoke(app, ["database", "check"])
 
     assert result.exit_code == 0
     assert "sqlite" in result.stdout
-    assert "20260729_0001" in result.stdout
+    assert head_revision in result.stdout
     assert "正常" in result.stdout
 
 

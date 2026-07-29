@@ -41,19 +41,19 @@ queued ──claim──> running ──complete──> succeeded
 - Create: `tests/runner/test_job_schema.py`
 - Modify: `tests/storage/test_migration.py`
 
-- [ ] **Step 1: Write failing schema and migration tests**
+- [x] **Step 1: Write failing schema and migration tests**
 
 Prove the job table contains status, priority, availability, attempts, lease, heartbeat, payload, result, timestamps, a unique idempotency key, and the claim-path index.
 
-- [ ] **Step 2: Verify RED**
+- [x] **Step 2: Verify RED**
 
 Run: `python -m pytest tests/runner/test_job_schema.py tests/storage/test_migration.py -v`
 
-- [ ] **Step 3: Implement `RunnerJobRow` and Alembic revision**
+- [x] **Step 3: Implement `RunnerJobRow` and Alembic revision**
 
 Use bounded strings for type/status/worker/error and JSON for payload/result. Store UTC as naive `DATETIME(6)`.
 
-- [ ] **Step 4: Verify and commit**
+- [x] **Step 4: Verify and commit**
 
 Commit: `feat: add durable runner job schema`
 

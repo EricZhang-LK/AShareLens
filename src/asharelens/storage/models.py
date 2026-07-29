@@ -14,11 +14,12 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     Index,
+    Integer,
     PrimaryKeyConstraint,
     String,
     UniqueConstraint,
 )
-from sqlalchemy.dialects.mysql import DECIMAL
+from sqlalchemy.dialects.mysql import DATETIME, DECIMAL
 from sqlalchemy.orm import Mapped, mapped_column
 
 from asharelens.storage.database import Base
@@ -27,6 +28,7 @@ MYSQL_TABLE_OPTIONS = {
     "mysql_engine": "InnoDB",
     "mysql_charset": "utf8mb4",
 }
+UTC_DATETIME = DateTime(timezone=False).with_variant(DATETIME(fsp=6), "mysql")
 
 
 def utc_now_naive() -> datetime:
@@ -162,3 +164,53 @@ class PublishedPartitionRow(Base):
         onupdate=utc_now_naive,
         nullable=False,
     )
+
+
+class RunnerJobRow(Base):
+    """Durable at-least-once job protected by a renewable lease."""
+
+    __tablename__ = "runner_jobs"
+    __table_args__ = (
+        UniqueConstraint(
+            "job_type",
+            "idempotency_key",
+            name="uq_runner_job_idempotency",
+        ),
+        Index(
+            "ix_runner_job_claim",
+            "queue",
+            "status",
+            "available_at",
+            "priority",
+            "created_at",
+        ),
+        MYSQL_TABLE_OPTIONS,
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    queue: Mapped[str] = mapped_column(String(32), nullable=False)
+    job_type: Mapped[str] = mapped_column(String(64), nullable=False)
+    idempotency_key: Mapped[str] = mapped_column(String(128), nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False)
+    priority: Mapped[int] = mapped_column(Integer, nullable=False)
+    available_at: Mapped[datetime] = mapped_column(UTC_DATETIME, nullable=False)
+    attempt: Mapped[int] = mapped_column(Integer, nullable=False)
+    max_attempts: Mapped[int] = mapped_column(Integer, nullable=False)
+    payload: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    result: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
+    leased_by: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    lease_expires_at: Mapped[datetime | None] = mapped_column(UTC_DATETIME, nullable=True)
+    heartbeat_at: Mapped[datetime | None] = mapped_column(UTC_DATETIME, nullable=True)
+    last_error: Mapped[str | None] = mapped_column(String(2000), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        UTC_DATETIME,
+        default=utc_now_naive,
+        nullable=False,
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        UTC_DATETIME,
+        default=utc_now_naive,
+        onupdate=utc_now_naive,
+        nullable=False,
+    )
+    finished_at: Mapped[datetime | None] = mapped_column(UTC_DATETIME, nullable=True)

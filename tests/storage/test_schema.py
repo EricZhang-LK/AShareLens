@@ -21,6 +21,7 @@ def test_schema_creates_on_in_memory_sqlite_for_repository_tests() -> None:
         "data_partitions",
         "ingestion_batches",
         "published_partitions",
+        "runner_jobs",
     }
 
 
