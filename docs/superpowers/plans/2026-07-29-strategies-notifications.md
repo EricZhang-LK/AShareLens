@@ -70,9 +70,9 @@
 - Create: `src/asharelens/notifications/render.py`
 - Create: `tests/notifications/test_render.py`
 
-- [ ] Test deterministic Chinese summary, selected/excluded counts, reasons, orders, fingerprint and disclaimer.
-- [ ] Define `NotifierPlugin`, capabilities and sanitized delivery result.
-- [ ] Verify and commit.
+- [x] Test deterministic Chinese summary, selected/excluded counts, reasons, orders, fingerprint and disclaimer.
+- [x] Define `NotifierPlugin`, capabilities and sanitized delivery result.
+- [x] Verify and commit.
 
 ### Task 6: Transactional notification outbox
 
