@@ -92,15 +92,15 @@ Commit: `feat: implement lease based task broker`
 - Create: `src/asharelens/runner/worker.py`
 - Create: `tests/runner/test_worker.py`
 
-- [ ] **Step 1: Write failing worker tests**
+- [x] **Step 1: Write failing worker tests**
 
 Prove successful dispatch, unknown job failure, retryable exception, permanent exception, heartbeat during long execution, and safe recovery after simulated process loss.
 
-- [ ] **Step 2: Implement `ExecutorRegistry`, `Worker.run_once` and `Reaper.run_once`**
+- [x] **Step 2: Implement `ExecutorRegistry`, `Worker.run_once` and `Reaper.run_once`**
 
 Executors receive an immutable job snapshot and an explicit heartbeat callback. No executor may commit the queue transaction itself.
 
-- [ ] **Step 3: Verify and commit**
+- [x] **Step 3: Verify and commit**
 
 Commit: `feat: execute and recover durable jobs`
 
