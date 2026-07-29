@@ -12,11 +12,10 @@ __pycache__/
 .env
 .env.*
 !.env.example
-data/
+/data/
 artifacts/
 *.log
 .idea/
 .vscode/
 .DS_Store
 Thumbs.db
-
