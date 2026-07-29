@@ -67,7 +67,16 @@
 - Modify: `README.md`
 - Modify: `docs/superpowers/plans/2026-07-29-akshare-tushare-providers.md`
 
-- [ ] List all installed-capability Providers without importing optional SDKs.
-- [ ] Document default order, Token configuration, units, historical-universe limitation and upstream terms.
-- [ ] Run full tests, coverage, Ruff, mypy and build.
-- [ ] Record evidence and commit `docs: verify optional data providers`.
+- [x] List all installed-capability Providers without importing optional SDKs.
+- [x] Document default order, Token configuration, units, historical-universe limitation and upstream terms.
+- [x] Run full tests, coverage, Ruff, mypy and build.
+- [x] Record evidence and commit `docs: verify optional data providers`.
+
+## Verification Evidence
+
+- 2026-07-29：收集 133 项测试，131 项通过，2 项 MySQL 8.4 集成测试因本机无测试数据库而跳过；总覆盖率 86%，并设置 85% 最低门禁。
+- AkShare 契约覆盖可选依赖缺失、当前股票池限制、沪深京代码、闭市日补全、三种复权参数、成交量/成交额单位和上游错误脱敏。
+- Tushare 契约覆盖 SDK/Token 缺失、历史上市与退市、交易日历、单日全市场与区间逐股票查询、单位换算、复权能力拒绝和凭据脱敏。
+- `ruff check .` 通过；`mypy src` 严格检查 38 个源文件通过；源码包和 wheel 构建成功。
+- `provider list` 在未导入可选 SDK 的情况下列出 BaoStock（默认）、AkShare（补充）和 Tushare（可选注册）。
+- 真实外部网络探针不进入默认 CI，避免上游不稳定造成随机失败；数据发布仍必须通过质量门禁。

@@ -33,6 +33,11 @@ def test_provider_list_identifies_optional_zero_registration_default() -> None:
     assert "默认" in result.stdout
     assert "免注册" in result.stdout
     assert "可选安装" in result.stdout
+    assert "akshare" in result.stdout
+    assert "补充" in result.stdout
+    assert "tushare" in result.stdout
+    assert "需要注册" in result.stdout
+    assert "asharelens[tushare]" in result.stdout
 
 
 def test_provider_check_prints_sanitized_failure_without_traceback(
