@@ -255,3 +255,147 @@ class RunnerScheduleRow(Base):
         onupdate=utc_now_naive,
         nullable=False,
     )
+
+
+class SimulationAccountRow(Base):
+    """Mutable paper-account state advanced by immutable simulation runs."""
+
+    __tablename__ = "simulation_accounts"
+    __table_args__ = (
+        UniqueConstraint("name", name="uq_simulation_account_name"),
+        MYSQL_TABLE_OPTIONS,
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    name: Mapped[str] = mapped_column(String(128), nullable=False)
+    initial_cash: Mapped[Decimal] = mapped_column(DECIMAL(24, 4), nullable=False)
+    current_state: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    state_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    last_session_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        UTC_DATETIME,
+        default=utc_now_naive,
+        nullable=False,
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        UTC_DATETIME,
+        default=utc_now_naive,
+        onupdate=utc_now_naive,
+        nullable=False,
+    )
+
+
+class SimulationRunRow(Base):
+    """Immutable reproducible transition for one paper account session."""
+
+    __tablename__ = "simulation_runs"
+    __table_args__ = (
+        UniqueConstraint(
+            "account_id",
+            "session_date",
+            name="uq_simulation_run_account_date",
+        ),
+        Index("ix_simulation_run_fingerprint", "fingerprint"),
+        MYSQL_TABLE_OPTIONS,
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    account_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("simulation_accounts.id", ondelete="RESTRICT"),
+        nullable=False,
+        index=True,
+    )
+    session_date: Mapped[date] = mapped_column(Date, nullable=False)
+    fingerprint: Mapped[str] = mapped_column(String(64), nullable=False)
+    strategy_id: Mapped[str] = mapped_column(String(128), nullable=False)
+    strategy_version: Mapped[str] = mapped_column(String(32), nullable=False)
+    engine_version: Mapped[str] = mapped_column(String(32), nullable=False)
+    parameters: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    data_snapshot_id: Mapped[str] = mapped_column(String(64), nullable=False)
+    partition_ids: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    input_state: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    input_state_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    output_state: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    output_state_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    nav_cash: Mapped[Decimal] = mapped_column(DECIMAL(24, 4), nullable=False)
+    nav_market_value: Mapped[Decimal] = mapped_column(DECIMAL(24, 4), nullable=False)
+    nav_total_value: Mapped[Decimal] = mapped_column(DECIMAL(24, 4), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(UTC_DATETIME, nullable=False)
+
+
+class SimulationCandidateRow(Base):
+    """Structured explainable selection result for one simulation run."""
+
+    __tablename__ = "simulation_candidates"
+    __table_args__ = (
+        PrimaryKeyConstraint("run_id", "sequence", name="pk_simulation_candidate"),
+        UniqueConstraint(
+            "run_id",
+            "symbol",
+            name="uq_simulation_candidate_symbol",
+        ),
+        MYSQL_TABLE_OPTIONS,
+    )
+
+    run_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("simulation_runs.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    sequence: Mapped[int] = mapped_column(Integer, nullable=False)
+    symbol: Mapped[str] = mapped_column(String(16), nullable=False)
+    signal_date: Mapped[date] = mapped_column(Date, nullable=False)
+    selected: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    score: Mapped[Decimal] = mapped_column(DECIMAL(20, 18), nullable=False)
+    rank: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    reasons: Mapped[list[dict[str, Any]]] = mapped_column(JSON, nullable=False)
+    metrics: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    data_warnings: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+
+
+class SimulationOrderRow(Base):
+    """Order generated after a close signal."""
+
+    __tablename__ = "simulation_orders"
+    __table_args__ = (
+        PrimaryKeyConstraint("run_id", "sequence", name="pk_simulation_order"),
+        MYSQL_TABLE_OPTIONS,
+    )
+
+    run_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("simulation_runs.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    sequence: Mapped[int] = mapped_column(Integer, nullable=False)
+    symbol: Mapped[str] = mapped_column(String(16), nullable=False)
+    side: Mapped[str] = mapped_column(String(8), nullable=False)
+    quantity: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    signal_date: Mapped[date] = mapped_column(Date, nullable=False)
+
+
+class SimulationFillRow(Base):
+    """Next-session opening fill with explicit fixed-point costs."""
+
+    __tablename__ = "simulation_fills"
+    __table_args__ = (
+        PrimaryKeyConstraint("run_id", "sequence", name="pk_simulation_fill"),
+        MYSQL_TABLE_OPTIONS,
+    )
+
+    run_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("simulation_runs.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    sequence: Mapped[int] = mapped_column(Integer, nullable=False)
+    symbol: Mapped[str] = mapped_column(String(16), nullable=False)
+    side: Mapped[str] = mapped_column(String(8), nullable=False)
+    quantity: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    price: Mapped[Decimal] = mapped_column(DECIMAL(18, 6), nullable=False)
+    signal_date: Mapped[date] = mapped_column(Date, nullable=False)
+    trade_date: Mapped[date] = mapped_column(Date, nullable=False)
+    commission: Mapped[Decimal] = mapped_column(DECIMAL(18, 4), nullable=False)
+    transfer_fee: Mapped[Decimal] = mapped_column(DECIMAL(18, 4), nullable=False)
+    stamp_duty: Mapped[Decimal] = mapped_column(DECIMAL(18, 4), nullable=False)

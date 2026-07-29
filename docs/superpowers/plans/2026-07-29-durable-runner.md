@@ -133,15 +133,15 @@ Commit: `feat: schedule daily jobs persistently`
 - Create: `migrations/versions/20260729_0004_simulation_ledger.py`
 - Create: `tests/runner/test_daily_simulation.py`
 
-- [ ] **Step 1: Write failing equivalence and idempotency tests**
+- [x] **Step 1: Write failing equivalence and idempotency tests**
 
 For the same snapshot, strategy identity and parameters, replaying sessions through daily jobs must produce the same candidates, orders, fills and NAV as `DailyCycleEngine.run`. Re-running one date must not duplicate any ledger row.
 
-- [ ] **Step 2: Implement immutable run and ledger persistence**
+- [x] **Step 2: Implement immutable run and ledger persistence**
 
 Persist the run fingerprint, exact partition IDs, strategy version, parameters, engine version, input state hash and output state hash.
 
-- [ ] **Step 3: Verify and commit**
+- [x] **Step 3: Verify and commit**
 
 Commit: `feat: run daily simulation on shared engine`
 
