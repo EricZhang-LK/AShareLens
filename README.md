@@ -46,6 +46,20 @@ BaoStock 是默认真实数据源，匿名登录、不要求用户申请 Token�
 当前 BaoStock Provider 提供沪深股票列表、交易日历和日线行情。北交所数据将由
 AkShare 补充 Provider 覆盖。外部数据的可用性、许可和使用限制以数据提供方说明为准。
 
+## MySQL 持久化
+
+服务端生产环境固定使用 MySQL 8.4 LTS、InnoDB 和 utf8mb4。数据库时间统一保存为
+UTC，价格和金额使用定点 DECIMAL。SQLite 仅用于 SDK 开发和仓储单元测试，不是正式
+服务端数据库。
+
+```powershell
+$env:ASHARELENS_DATABASE_URL = "mysql+pymysql://user:password@127.0.0.1:3306/asharelens?charset=utf8mb4"
+.\.venv\Scripts\alembic.exe upgrade head
+.\.venv\Scripts\python.exe -m asharelens.cli database check
+```
+
+正式升级必须先备份 MySQL，再执行迁移；迁移失败时不得启动新版本服务。
+
 完整设计见
 [`docs/superpowers/specs/2026-07-29-asharelens-platform-design.md`](docs/superpowers/specs/2026-07-29-asharelens-platform-design.md)。
 
