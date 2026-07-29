@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, time
 from decimal import Decimal
 from typing import Any
 
@@ -17,6 +17,7 @@ from sqlalchemy import (
     Integer,
     PrimaryKeyConstraint,
     String,
+    Time,
     UniqueConstraint,
 )
 from sqlalchemy.dialects.mysql import DATETIME, DECIMAL
@@ -214,3 +215,43 @@ class RunnerJobRow(Base):
         nullable=False,
     )
     finished_at: Mapped[datetime | None] = mapped_column(UTC_DATETIME, nullable=True)
+
+
+class RunnerScheduleRow(Base):
+    """Persistent daily schedule interpreted at an explicit local timezone."""
+
+    __tablename__ = "runner_schedules"
+    __table_args__ = (
+        UniqueConstraint("name", name="uq_runner_schedule_name"),
+        Index("ix_runner_schedule_due", "enabled", "next_fire_at"),
+        MYSQL_TABLE_OPTIONS,
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    name: Mapped[str] = mapped_column(String(128), nullable=False)
+    job_type: Mapped[str] = mapped_column(String(64), nullable=False)
+    queue: Mapped[str] = mapped_column(String(32), nullable=False)
+    payload: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    timezone: Mapped[str] = mapped_column(String(64), nullable=False)
+    local_time: Mapped[time] = mapped_column(Time, nullable=False)
+    weekdays: Mapped[list[int]] = mapped_column(JSON, nullable=False)
+    enabled: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    priority: Mapped[int] = mapped_column(Integer, nullable=False)
+    max_attempts: Mapped[int] = mapped_column(Integer, nullable=False)
+    catch_up_limit: Mapped[int] = mapped_column(Integer, nullable=False)
+    next_fire_at: Mapped[datetime] = mapped_column(UTC_DATETIME, nullable=False)
+    last_enqueued_for: Mapped[datetime | None] = mapped_column(
+        UTC_DATETIME,
+        nullable=True,
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        UTC_DATETIME,
+        default=utc_now_naive,
+        nullable=False,
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        UTC_DATETIME,
+        default=utc_now_naive,
+        onupdate=utc_now_naive,
+        nullable=False,
+    )
