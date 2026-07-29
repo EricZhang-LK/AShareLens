@@ -5,11 +5,12 @@ from __future__ import annotations
 from collections import defaultdict
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
-from datetime import date, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from enum import StrEnum
 from typing import Any
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 from sqlalchemy.orm import Session, sessionmaker
 
 from asharelens.core.engine import DailyCycleEngine
@@ -19,9 +20,16 @@ from asharelens.data.models import Adjustment, Dataset
 from asharelens.data.provider import DataProviderPlugin
 from asharelens.data.quality import DailyBarQualityGate
 from asharelens.notifications.render import render_daily_selection
+from asharelens.runner.executor import (
+    Heartbeat,
+    PermanentJobError,
+    RetryableJobError,
+)
+from asharelens.runner.models import JobSnapshot
 from asharelens.runner.workflows.daily_simulation import DailySimulationService
 from asharelens.runner.workflows.market_sync import (
     MarketDataSynchronizer,
+    MarketSyncFailure,
     MarketSyncStatus,
 )
 from asharelens.storage.data_repository import DataRepository, PublishedDailyData
@@ -30,16 +38,15 @@ from asharelens.storage.simulation_repository import (
     SimulationRepository,
     SimulationRunSnapshot,
 )
-from asharelens.strategies.registry import StrategyRegistry
+from asharelens.strategies.registry import StrategyNotFound, StrategyRegistry
 
 
-class DailyPipelineRequest(BaseModel):
-    """Validated, serializable inputs for one daily research cycle."""
+class DailyPipelineConfiguration(BaseModel):
+    """Persistable daily-cycle configuration without one scheduled date."""
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     account_name: str = Field(min_length=1, max_length=128)
-    target_date: date
     symbols: tuple[str, ...] = Field(min_length=1)
     provider_ids: tuple[str, ...] = Field(min_length=1)
     strategy_id: str = Field(min_length=1)
@@ -54,6 +61,7 @@ class DailyPipelineRequest(BaseModel):
         default_factory=OpeningExecutionModel
     )
     notifier_ids: tuple[str, ...] = ("console",)
+    target_timezone: str = Field(default="Asia/Shanghai", min_length=1)
 
     @field_validator("symbols", "provider_ids", "notifier_ids")
     @classmethod
@@ -64,6 +72,12 @@ class DailyPipelineRequest(BaseModel):
         if len(set(normalized)) != len(normalized):
             raise ValueError("values must be unique")
         return normalized
+
+
+class DailyPipelineRequest(DailyPipelineConfiguration):
+    """Validated inputs for one concrete daily research cycle."""
+
+    target_date: date
 
 
 class DailyPipelineStatus(StrEnum):
@@ -305,3 +319,98 @@ def _history(
         symbol: tuple(sorted(observations, key=lambda bar: bar.trade_date))
         for symbol, observations in sorted(grouped.items())
     }
+
+
+class DailyPipelineExecutor:
+    """Durable Runner adapter with explicit permanent/retryable failures."""
+
+    def __init__(
+        self,
+        *,
+        service: DailyPipelineService,
+        clock: Callable[[], datetime] | None = None,
+    ) -> None:
+        self._service = service
+        self._clock = clock or (lambda: datetime.now(UTC))
+
+    def __call__(
+        self,
+        job: JobSnapshot,
+        heartbeat: Heartbeat,
+    ) -> dict[str, object]:
+        """Resolve the scheduled date, execute, and return JSON-safe evidence."""
+
+        raw = job.payload.get("input", job.payload)
+        if not isinstance(raw, dict):
+            raise PermanentJobError("daily pipeline input must be an object")
+        try:
+            configuration = DailyPipelineConfiguration.model_validate(raw)
+            target_date = _target_date(
+                job,
+                timezone=configuration.target_timezone,
+                fallback=self._clock(),
+            )
+            request = DailyPipelineRequest(
+                **configuration.model_dump(),
+                target_date=target_date,
+            )
+        except (ValidationError, ValueError) as error:
+            raise PermanentJobError(
+                f"invalid daily pipeline configuration: {error}"
+            ) from None
+
+        heartbeat()
+        try:
+            result = self._service.run(request)
+        except MarketSyncFailure as error:
+            if error.retryable:
+                raise RetryableJobError(
+                    "market data providers are temporarily unavailable",
+                    retry_delay=timedelta(minutes=5),
+                ) from None
+            raise PermanentJobError(
+                "market data failed the configured quality contract"
+            ) from None
+        except (
+            CatchUpWindowTooShort,
+            PipelineConfigurationError,
+            StrategyNotFound,
+            ValidationError,
+        ) as error:
+            raise PermanentJobError(str(error)) from None
+        heartbeat()
+        return {
+            "latest_fingerprint": result.latest_fingerprint,
+            "notification_ids": list(result.notification_ids),
+            "processed_sessions": [
+                session_date.isoformat()
+                for session_date in result.processed_sessions
+            ],
+            "provider_id": result.provider_id,
+            "published_partitions": result.published_partitions,
+            "status": result.status.value,
+        }
+
+
+def _target_date(
+    job: JobSnapshot,
+    *,
+    timezone: str,
+    fallback: datetime,
+) -> date:
+    explicit = job.payload.get("target_date")
+    if isinstance(explicit, str):
+        return date.fromisoformat(explicit)
+    schedule = job.payload.get("schedule")
+    planned = schedule.get("planned_fire_at") if isinstance(schedule, dict) else None
+    try:
+        zone = ZoneInfo(timezone)
+    except ZoneInfoNotFoundError:
+        raise ValueError(f"unknown timezone: {timezone}") from None
+    if isinstance(planned, str):
+        instant = datetime.fromisoformat(planned.removesuffix("Z"))
+        if instant.tzinfo is None:
+            instant = instant.replace(tzinfo=UTC)
+        return instant.astimezone(zone).date()
+    aware = fallback.replace(tzinfo=UTC) if fallback.tzinfo is None else fallback
+    return aware.astimezone(zone).date()

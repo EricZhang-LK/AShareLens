@@ -4,7 +4,10 @@ import pytest
 from sqlalchemy.orm import Session
 
 from asharelens.runner.models import JobStatus
-from asharelens.runner.scheduler import PersistentScheduler
+from asharelens.runner.scheduler import (
+    PersistentScheduler,
+    ScheduleConflict,
+)
 from asharelens.storage.database import Base, create_database_engine
 from asharelens.storage.models import RunnerJobRow
 
@@ -118,3 +121,24 @@ def test_schedule_validates_weekdays_and_catch_up_limit(session: Session) -> Non
             catch_up_limit=0,
             now=datetime(2026, 7, 29, 6),
         )
+
+
+def test_ensure_daily_is_idempotent_and_rejects_configuration_drift(
+    session: Session,
+) -> None:
+    scheduler = PersistentScheduler(session)
+    inputs = {
+        "name": "每日选股",
+        "job_type": "daily.pipeline",
+        "local_time": time(18),
+        "weekdays": (0, 1, 2, 3, 4),
+        "payload": {"strategy_id": "moving_average"},
+        "now": datetime(2026, 7, 30, 8),
+    }
+
+    first = scheduler.ensure_daily(**inputs)
+    repeated = scheduler.ensure_daily(**inputs)
+
+    assert repeated.id == first.id
+    with pytest.raises(ScheduleConflict):
+        scheduler.ensure_daily(**{**inputs, "local_time": time(19)})

@@ -20,6 +20,10 @@ class ScheduleNotFound(LookupError):
     """Raised when a persistent schedule ID does not exist."""
 
 
+class ScheduleConflict(ValueError):
+    """A schedule name already exists with different immutable configuration."""
+
+
 @dataclass(frozen=True, slots=True)
 class ScheduleSnapshot:
     """Immutable view of one daily schedule."""
@@ -166,6 +170,72 @@ class PersistentScheduler:
         )
         self._session.add(row)
         self._session.flush()
+        return _snapshot(row)
+
+    def ensure_daily(
+        self,
+        *,
+        name: str,
+        job_type: str,
+        local_time: time,
+        weekdays: tuple[int, ...],
+        payload: dict[str, Any],
+        now: datetime,
+        timezone: str = "Asia/Shanghai",
+        queue: str = "default",
+        enabled: bool = True,
+        priority: int = 0,
+        max_attempts: int = 3,
+        catch_up_limit: int = 1,
+    ) -> ScheduleSnapshot:
+        """Create one daily rule or return its identical existing definition."""
+
+        row = self._session.scalar(
+            select(RunnerScheduleRow).where(RunnerScheduleRow.name == name)
+        )
+        if row is None:
+            return self.create_daily(
+                name=name,
+                job_type=job_type,
+                local_time=local_time,
+                weekdays=weekdays,
+                payload=payload,
+                now=now,
+                timezone=timezone,
+                queue=queue,
+                enabled=enabled,
+                priority=priority,
+                max_attempts=max_attempts,
+                catch_up_limit=catch_up_limit,
+            )
+        expected = {
+            "catch_up_limit": catch_up_limit,
+            "enabled": enabled,
+            "job_type": job_type,
+            "local_time": local_time,
+            "max_attempts": max_attempts,
+            "payload": payload,
+            "priority": priority,
+            "queue": queue,
+            "timezone": timezone,
+            "weekdays": list(_validate_weekdays(weekdays)),
+        }
+        actual = {
+            "catch_up_limit": row.catch_up_limit,
+            "enabled": row.enabled,
+            "job_type": row.job_type,
+            "local_time": row.local_time,
+            "max_attempts": row.max_attempts,
+            "payload": row.payload,
+            "priority": row.priority,
+            "queue": row.queue,
+            "timezone": row.timezone,
+            "weekdays": row.weekdays,
+        }
+        if actual != expected:
+            raise ScheduleConflict(
+                f"schedule {name!r} already exists with different configuration"
+            )
         return _snapshot(row)
 
     def run_due(
