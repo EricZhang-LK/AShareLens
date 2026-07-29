@@ -107,6 +107,15 @@
 - Modify: `README.md`
 - Modify: `docs/superpowers/plans/2026-07-29-strategies-notifications.md`
 
-- [ ] Execute Outbox messages via notifier registry with heartbeat and retry classification.
-- [ ] Run full tests, coverage, Ruff, mypy and build.
-- [ ] Record evidence and commit `docs: verify strategies and notifications`.
+- [x] Execute Outbox messages via notifier registry with heartbeat and retry classification.
+- [x] Run full tests, coverage, Ruff, mypy and build.
+- [x] Record evidence and commit `docs: verify strategies and notifications`.
+
+Evidence on 2026-07-29:
+
+- `pytest --cov=asharelens`: 165 passed, 2 MySQL integration tests skipped because
+  `ASHARELENS_TEST_DATABASE_URL` is not configured, total coverage 87.31%.
+- `ruff check .`: passed.
+- `mypy src`: passed in strict mode across 50 source files.
+- `python -m build --no-isolation`: sdist and wheel built successfully using the
+  already-installed, pinned build backend.

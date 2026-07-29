@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 from alembic import command
 from alembic.config import Config
+from alembic.script import ScriptDirectory
 from typer.testing import CliRunner
 
 from asharelens.cli import app
@@ -30,10 +31,13 @@ def test_runner_doctor_reports_migration_and_queue_health(
     database_url: str,
 ) -> None:
     result = CliRunner().invoke(app, ["runner", "doctor"])
+    config = Config(str(Path(__file__).parents[1] / "alembic.ini"))
+    migration_head = ScriptDirectory.from_config(config).get_current_head()
 
     assert result.exit_code == 0
     assert "正常" in result.stdout
-    assert "20260729_0004" in result.stdout
+    assert migration_head is not None
+    assert migration_head in result.stdout
     assert "待处理 0" in result.stdout
 
 
