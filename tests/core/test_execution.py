@@ -89,6 +89,19 @@ def test_execution_rejects_missing_market_bar() -> None:
     assert error.value.reason_code == "missing_bar"
 
 
+def test_execution_rejects_non_trading_session() -> None:
+    model = OpeningExecutionModel()
+    suspended = make_bar().model_copy(update={"is_trading": False})
+
+    with pytest.raises(OrderRejected) as error:
+        model.execute(
+            Order("demo.000001", Side.BUY, 100, date(2026, 1, 5)),
+            suspended,
+        )
+
+    assert error.value.reason_code == "not_trading"
+
+
 def test_order_rejects_non_positive_quantity() -> None:
     with pytest.raises(ValueError, match="quantity must be positive"):
         Order("demo.000001", Side.BUY, 0, date(2026, 1, 5))

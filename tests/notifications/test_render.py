@@ -19,6 +19,12 @@ def _run() -> SimulationRunSnapshot:
         strategy_version="1.0.0",
         engine_version="0.1.0",
         parameters={"fast_period": 20},
+        execution_config={
+            "execution_model": {"slippage_bps": 10},
+            "initial_cash": 100_000,
+            "max_weight": 1,
+            "top_n": 1,
+        },
         data_snapshot_id="b" * 64,
         partition_ids=("partition-1",),
         input_state=empty,

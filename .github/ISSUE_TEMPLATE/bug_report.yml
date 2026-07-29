@@ -1,0 +1,54 @@
+name: Bug 报告
+description: 报告可复现的软件错误
+title: "[Bug] "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: 请删除 Token、Webhook、数据库密码、个人持仓和受限数据。
+  - type: input
+    id: version
+    attributes:
+      label: AShareLens 版本或 commit
+    validations:
+      required: true
+  - type: dropdown
+    id: component
+    attributes:
+      label: 组件
+      options:
+        - Core / 回测
+        - 数据源 / 质量
+        - Runner / 每日模拟
+        - Web / API
+        - 通知
+        - Docker / MySQL
+        - 文档
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: 实际行为与预期行为
+      description: 包含日期、策略、脱敏配置和错误代码。
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 最小复现步骤
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: 脱敏日志或测试
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: 检查
+      options:
+        - label: 我已搜索现有 Issue。
+          required: true
+        - label: 内容不包含秘密、个人持仓或无权分享的数据。
+          required: true
