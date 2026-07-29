@@ -24,6 +24,7 @@ class DailyBar(FrozenModel):
     close: float = Field(gt=0)
     volume: int = Field(ge=0)
     amount: float = Field(ge=0)
+    is_trading: bool = True
 
     @model_validator(mode="after")
     def validate_price_range(self) -> DailyBar:
@@ -73,4 +74,3 @@ class StrategyContext(FrozenModel):
                         f"bar date {bar.trade_date} is later than signal_date {self.signal_date}"
                     )
         return self
-
