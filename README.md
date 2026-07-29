@@ -34,6 +34,25 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m asharelens.cli demo --json
 ```
 
+## Web 研究台
+
+Web 研究台使用 FastAPI + Vue 3，同一端口提供界面和 `/api/v1`。默认只监听
+`127.0.0.1`，不会无意暴露到局域网。策略参数表单直接由 Python 策略的 Pydantic
+JSON Schema 生成；参数会先交回 Python 校验，再进入与每日模拟共用的回测内核。
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -e ".[server,dev]"
+Set-Location web
+npm ci
+npm run build
+Set-Location ..
+.\.venv\Scripts\python.exe -m asharelens.cli web
+```
+
+访问 `http://127.0.0.1:8000`。源码开发时可分别运行后端 `asharelens web` 和前端
+`npm run dev`；Vite 会把 `/api` 请求转发到本地 8000 端口。只有明确需要从其他设备
+访问时，才使用 `--host 0.0.0.0 --allow-network`，并自行配置主机防火墙。
+
 ## 真实数据源
 
 默认路由顺序为 BaoStock → AkShare → Tushare，用户可以调整。路由以完整数据分区为
