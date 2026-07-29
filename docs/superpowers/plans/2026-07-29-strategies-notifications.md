@@ -36,9 +36,9 @@
 - Create: `src/asharelens/strategies/momentum_rps.py`
 - Create: `tests/strategies/test_momentum_rps.py`
 
-- [ ] Test schema bounds, lookback/skip validation, insufficient history, deterministic ranks, selected percentile and explanations.
-- [ ] Implement total-return momentum ranking without future bars.
-- [ ] Verify and commit `feat: add momentum rps strategy`.
+- [x] Test schema bounds, lookback/skip validation, insufficient history, deterministic ranks, selected percentile and explanations.
+- [x] Implement total-return momentum ranking without future bars.
+- [x] Verify and commit `feat: add momentum rps strategy`.
 
 ### Task 3: Value-quality strategy
 
