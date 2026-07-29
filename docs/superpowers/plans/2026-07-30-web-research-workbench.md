@@ -72,13 +72,13 @@ TypeScript and Vite; official Vue Router and Vite release guidance.
 - Create: `web/src/styles/*`
 - Create: `web/src/views/*`
 
-- [ ] Scaffold Vue 3, TypeScript, Vue Router and Vite with reproducible lockfile.
-- [ ] Implement responsive desktop/mobile navigation, semantic focus states,
+- [x] Scaffold Vue 3, TypeScript, Vue Router and Vite with reproducible lockfile.
+- [x] Implement responsive desktop/mobile navigation, semantic focus states,
   reduced-motion support, loading/empty/error states, and the research-folio
   visual system.
-- [ ] Build Overview, Strategies, Backtest and Data Sources routes against the
+- [x] Build Overview, Strategies, Backtest and Data Sources routes against the
   real API client.
-- [ ] Verify type-check and production build; commit.
+- [x] Verify type-check and production build; commit.
 
 ### Task 4: JSON Schema automatic parameter form
 

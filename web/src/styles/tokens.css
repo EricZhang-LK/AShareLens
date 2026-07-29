@@ -1,0 +1,22 @@
+:root {
+  --paper: #f1ecdf;
+  --paper-deep: #e7dec9;
+  --paper-light: #fbf8f0;
+  --ink: #142a25;
+  --ink-soft: #53645e;
+  --ink-faint: #87928c;
+  --line: rgba(20, 42, 37, 0.18);
+  --line-strong: rgba(20, 42, 37, 0.42);
+  --cinnabar: #b63d2e;
+  --cinnabar-dark: #8d2b20;
+  --jade: #267765;
+  --jade-light: #dce9df;
+  --amber: #b98736;
+  --shadow: 0 24px 70px rgba(36, 44, 37, 0.12);
+  --display: "Iowan Old Style", "Noto Serif SC", "Source Han Serif SC",
+    "Songti SC", Georgia, serif;
+  --body: "Noto Sans SC", "Source Han Sans SC", "Microsoft YaHei UI",
+    sans-serif;
+  --mono: "IBM Plex Mono", "Cascadia Mono", "SFMono-Regular", Consolas,
+    monospace;
+}
