@@ -44,6 +44,7 @@ class Instrument(FrozenModel):
     name: str = Field(min_length=1)
     listed_on: date | None = None
     delisted_on: date | None = None
+    is_active: bool = True
 
     @property
     def exchange(self) -> Exchange:
@@ -79,4 +80,3 @@ class DataBatch[RecordT](FrozenModel):
         if value.tzinfo is None or value.utcoffset() is None:
             raise ValueError("fetched_at must be timezone-aware")
         return value
-
