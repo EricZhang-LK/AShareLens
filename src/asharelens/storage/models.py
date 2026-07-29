@@ -312,6 +312,7 @@ class SimulationRunRow(Base):
     strategy_version: Mapped[str] = mapped_column(String(32), nullable=False)
     engine_version: Mapped[str] = mapped_column(String(32), nullable=False)
     parameters: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    execution_config: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
     data_snapshot_id: Mapped[str] = mapped_column(String(64), nullable=False)
     partition_ids: Mapped[list[str]] = mapped_column(JSON, nullable=False)
     input_state: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)

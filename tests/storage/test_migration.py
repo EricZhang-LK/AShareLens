@@ -36,6 +36,9 @@ def test_initial_migration_upgrades_and_downgrades_empty_database(
         "simulation_orders",
         "simulation_runs",
     } <= tables
+    assert "execution_config" in {
+        column["name"] for column in inspect(engine).get_columns("simulation_runs")
+    }
 
     command.downgrade(config, "base")
 

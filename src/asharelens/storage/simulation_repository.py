@@ -57,6 +57,7 @@ class SimulationRunSnapshot:
     strategy_version: str
     engine_version: str
     parameters: dict[str, Any]
+    execution_config: dict[str, Any]
     data_snapshot_id: str
     partition_ids: tuple[str, ...]
     input_state: PortfolioState
@@ -78,6 +79,7 @@ class SimulationRunInputs:
     strategy_version: str
     engine_version: str
     parameters: dict[str, Any]
+    execution_config: dict[str, Any]
     data_snapshot_id: str
     partition_ids: tuple[str, ...]
 
@@ -198,6 +200,7 @@ class SimulationRepository:
             strategy_version=inputs.strategy_version,
             engine_version=inputs.engine_version,
             parameters=dict(inputs.parameters),
+            execution_config=dict(inputs.execution_config),
             data_snapshot_id=inputs.data_snapshot_id,
             partition_ids=list(inputs.partition_ids),
             input_state=serialize_portfolio_state(input_state),
@@ -292,6 +295,7 @@ class SimulationRepository:
             strategy_version=row.strategy_version,
             engine_version=row.engine_version,
             parameters=dict(row.parameters),
+            execution_config=dict(row.execution_config),
             data_snapshot_id=row.data_snapshot_id,
             partition_ids=tuple(row.partition_ids),
             input_state=deserialize_portfolio_state(row.input_state),

@@ -4,10 +4,15 @@ import pytest
 
 from asharelens.core.engine import DailyCycleEngine
 from asharelens.core.execution import OpeningExecutionModel
+from asharelens.core.models import FundamentalMetric, FundamentalSnapshot
 from asharelens.demo.data import generate_demo_bars
 from asharelens.strategies.moving_average import (
     MovingAverageParams,
     MovingAverageStrategy,
+)
+from asharelens.strategies.value_quality import (
+    ValueQualityParams,
+    ValueQualityStrategy,
 )
 
 
@@ -69,3 +74,66 @@ def test_run_and_public_process_session_use_the_same_daily_cycle() -> None:
 def test_engine_rejects_empty_market_data() -> None:
     with pytest.raises(ValueError, match="market data must not be empty"):
         make_engine().run({})
+
+
+def test_engine_passes_only_point_in_time_fundamentals_to_strategy() -> None:
+    bars = generate_demo_bars(date(2026, 1, 5), sessions=2)
+    symbol = "demo.000001"
+    first_date = bars[symbol][0].trade_date
+    second_date = bars[symbol][1].trade_date
+    snapshot = FundamentalSnapshot(
+        symbol=symbol,
+        period_end=date(2025, 12, 31),
+        available_on=second_date,
+        metrics=(
+            FundamentalMetric(name="pe_ttm", value=12),
+            FundamentalMetric(name="pb", value=1.5),
+            FundamentalMetric(name="roe_ttm", value=18),
+            FundamentalMetric(name="revenue_growth_yoy", value=12),
+            FundamentalMetric(name="net_profit_growth_yoy", value=15),
+            FundamentalMetric(name="debt_to_assets", value=35),
+        ),
+    )
+    engine = DailyCycleEngine(
+        strategy=ValueQualityStrategy(),
+        params=ValueQualityParams(),
+        execution_model=OpeningExecutionModel(),
+        initial_cash=100_000,
+        top_n=1,
+        max_weight=1,
+    )
+
+    result = engine.run({symbol: bars[symbol]}, fundamentals={symbol: (snapshot,)})
+
+    first = next(
+        candidate
+        for candidate in result.candidates
+        if candidate.signal_date == first_date
+    )
+    second = next(
+        candidate
+        for candidate in result.candidates
+        if candidate.signal_date == second_date
+    )
+    assert first.selected is False
+    assert first.reasons[0].code == "missing_fundamentals"
+    assert second.selected is True
+
+
+def test_fundamentals_are_part_of_the_reproducible_fingerprint() -> None:
+    bars = generate_demo_bars(date(2026, 1, 5), sessions=2)
+    symbol = "demo.000001"
+    snapshot = FundamentalSnapshot(
+        symbol=symbol,
+        period_end=date(2025, 12, 31),
+        available_on=bars[symbol][0].trade_date,
+        metrics=(FundamentalMetric(name="pe_ttm", value=12),),
+    )
+
+    without = make_engine().run(bars)
+    with_snapshot = make_engine().run(
+        bars,
+        fundamentals={symbol: (snapshot,)},
+    )
+
+    assert without.fingerprint != with_snapshot.fingerprint
