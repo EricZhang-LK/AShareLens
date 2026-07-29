@@ -153,3 +153,46 @@ def test_daily_simulation_rejects_changed_inputs_for_completed_date(
             partition_ids=("partition-revised",),
             now=datetime(2026, 7, 29, 8, 1),
         )
+
+
+def test_daily_simulation_rejects_changed_execution_configuration(
+    session: Session,
+) -> None:
+    bars = generate_demo_bars(date(2026, 1, 5), sessions=35)
+    original = DailySimulationService(session, engine=_engine())
+    account = original.create_account(
+        name="执行配置冲突账户",
+        now=datetime(2026, 1, 1),
+    )
+    session_date = max(bar.trade_date for bar in bars["demo.000001"])
+    first = original.process_session(
+        account_id=account.id,
+        session_date=session_date,
+        history=bars,
+        partition_ids=("partition-35",),
+        now=datetime(2026, 7, 29, 8),
+    )
+    changed_engine = DailyCycleEngine(
+        strategy=MovingAverageStrategy(),
+        params=MovingAverageParams(fast_period=10, slow_period=30, confirm_days=3),
+        execution_model=OpeningExecutionModel(
+            slippage_bps=25,
+            commission_rate=0,
+            minimum_commission=0,
+            transfer_fee_rate=0,
+            stamp_duty_rate=0,
+        ),
+        initial_cash=100_000,
+        top_n=2,
+        max_weight=0.5,
+    )
+
+    assert first.execution_config["top_n"] == 1
+    with pytest.raises(SimulationReplayConflict):
+        DailySimulationService(session, engine=changed_engine).process_session(
+            account_id=account.id,
+            session_date=session_date,
+            history=bars,
+            partition_ids=("partition-35",),
+            now=datetime(2026, 7, 29, 8, 1),
+        )

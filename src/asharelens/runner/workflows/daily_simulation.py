@@ -15,7 +15,7 @@ from asharelens.core.engine import (
     DailyCycleEngine,
     build_data_snapshot_id,
 )
-from asharelens.core.models import DailyBar
+from asharelens.core.models import DailyBar, FundamentalSnapshot
 from asharelens.storage.simulation_repository import (
     SimulationAccountSnapshot,
     SimulationRepository,
@@ -66,14 +66,16 @@ class DailySimulationService[ParamsT: BaseModel]:
         history: Mapping[str, tuple[DailyBar, ...]],
         partition_ids: tuple[str, ...],
         now: datetime,
+        fundamentals: Mapping[str, tuple[FundamentalSnapshot, ...]] | None = None,
     ) -> SimulationRunSnapshot:
         """Run and atomically persist one date, idempotently."""
 
         normalized_partitions = tuple(sorted(set(partition_ids)))
         if not normalized_partitions:
             raise ValueError("partition_ids must identify the exact input data")
-        data_snapshot_id = build_data_snapshot_id(history)
+        data_snapshot_id = build_data_snapshot_id(history, fundamentals)
         parameters = self._engine.params.model_dump(mode="json")
+        execution_config = self._engine.execution_config()
         strategy_id = self._engine.strategy.metadata.strategy_id
         strategy_version = self._engine.strategy.metadata.version
 
@@ -88,6 +90,7 @@ class DailySimulationService[ParamsT: BaseModel]:
                 existing.strategy_id != strategy_id
                 or existing.strategy_version != strategy_version
                 or existing.parameters != parameters
+                or existing.execution_config != execution_config
                 or existing.data_snapshot_id != data_snapshot_id
                 or existing.partition_ids != normalized_partitions
             ):
@@ -108,6 +111,7 @@ class DailySimulationService[ParamsT: BaseModel]:
             account.state,
             session_date,
             history,
+            fundamentals,
         )
         fingerprint = _simulation_fingerprint(
             account_id=account.id,
@@ -115,6 +119,7 @@ class DailySimulationService[ParamsT: BaseModel]:
             strategy_id=strategy_id,
             strategy_version=strategy_version,
             parameters=parameters,
+            execution_config=execution_config,
             data_snapshot_id=data_snapshot_id,
             partition_ids=normalized_partitions,
             input_state_hash=account.state_hash,
@@ -130,6 +135,7 @@ class DailySimulationService[ParamsT: BaseModel]:
                 strategy_version=strategy_version,
                 engine_version=ENGINE_VERSION,
                 parameters=parameters,
+                execution_config=execution_config,
                 data_snapshot_id=data_snapshot_id,
                 partition_ids=normalized_partitions,
             ),
@@ -144,6 +150,7 @@ def _simulation_fingerprint(
     strategy_id: str,
     strategy_version: str,
     parameters: dict[str, object],
+    execution_config: dict[str, object],
     data_snapshot_id: str,
     partition_ids: tuple[str, ...],
     input_state_hash: str,
@@ -154,6 +161,7 @@ def _simulation_fingerprint(
         "engine_version": ENGINE_VERSION,
         "input_state_hash": input_state_hash,
         "parameters": parameters,
+        "execution_config": execution_config,
         "partition_ids": partition_ids,
         "session_date": session_date.isoformat(),
         "strategy_id": strategy_id,

@@ -18,7 +18,12 @@ from asharelens.core.execution import (
     Side,
 )
 from asharelens.core.fingerprint import build_run_fingerprint
-from asharelens.core.models import DailyBar, SelectionCandidate, StrategyContext
+from asharelens.core.models import (
+    DailyBar,
+    FundamentalSnapshot,
+    SelectionCandidate,
+    StrategyContext,
+)
 from asharelens.core.portfolio import build_equal_weight_targets
 from asharelens.core.strategy import StrategyPlugin
 
@@ -105,11 +110,22 @@ class DailyCycleEngine[ParamsT: BaseModel]:
 
         return PortfolioState(cash=self.initial_cash, positions={}, pending_orders=())
 
+    def execution_config(self) -> dict[str, object]:
+        """Return the exact portfolio and fill assumptions used by this engine."""
+
+        return {
+            "execution_model": self.execution_model.model_dump(mode="json"),
+            "initial_cash": self.initial_cash,
+            "max_weight": self.max_weight,
+            "top_n": self.top_n,
+        }
+
     def process_session(
         self,
         state: PortfolioState,
         session_date: date,
         history: Mapping[str, tuple[DailyBar, ...]],
+        fundamentals: Mapping[str, tuple[FundamentalSnapshot, ...]] | None = None,
     ) -> SessionOutcome:
         """Advance one session: fills first, close signal second."""
 
@@ -131,7 +147,19 @@ class DailyCycleEngine[ParamsT: BaseModel]:
         }
         nav = self._value_portfolio(session_date, cash, positions, latest_prices)
 
-        context = StrategyContext(signal_date=session_date, bars=dict(history))
+        visible_fundamentals = {
+            symbol: tuple(
+                snapshot
+                for snapshot in snapshots
+                if snapshot.available_on <= session_date
+            )
+            for symbol, snapshots in (fundamentals or {}).items()
+        }
+        context = StrategyContext(
+            signal_date=session_date,
+            bars=dict(history),
+            fundamentals=visible_fundamentals,
+        )
         candidates = self.strategy.generate(context, self.params)
         targets = build_equal_weight_targets(
             candidates,
@@ -161,6 +189,8 @@ class DailyCycleEngine[ParamsT: BaseModel]:
     def run(
         self,
         bars: Mapping[str, tuple[DailyBar, ...]],
+        *,
+        fundamentals: Mapping[str, tuple[FundamentalSnapshot, ...]] | None = None,
     ) -> BacktestResult:
         """Run all available sessions in chronological order."""
 
@@ -181,7 +211,12 @@ class DailyCycleEngine[ParamsT: BaseModel]:
                 symbol: tuple(bar for bar in observations if bar.trade_date <= session_date)
                 for symbol, observations in bars.items()
             }
-            outcome = self.process_session(state, session_date, history)
+            outcome = self.process_session(
+                state,
+                session_date,
+                history,
+                fundamentals,
+            )
             state = outcome.state
             candidate_ledger.extend(outcome.candidates)
             order_ledger.extend(outcome.orders)
@@ -197,14 +232,9 @@ class DailyCycleEngine[ParamsT: BaseModel]:
         fingerprint = build_run_fingerprint(
             strategy_identity,
             self.params.model_dump(mode="json"),
-            build_data_snapshot_id(bars),
+            build_data_snapshot_id(bars, fundamentals),
             ENGINE_VERSION,
-            {
-                "execution_model": self.execution_model.model_dump(mode="json"),
-                "initial_cash": self.initial_cash,
-                "max_weight": self.max_weight,
-                "top_n": self.top_n,
-            },
+            self.execution_config(),
         )
         return BacktestResult(
             candidates=tuple(candidate_ledger),
@@ -349,12 +379,25 @@ class DailyCycleEngine[ParamsT: BaseModel]:
 
 def build_data_snapshot_id(
     bars: Mapping[str, tuple[DailyBar, ...]],
+    fundamentals: Mapping[str, tuple[FundamentalSnapshot, ...]] | None = None,
 ) -> str:
-    """Hash the exact point-in-time normalized market-data snapshot."""
+    """Hash the exact normalized price and point-in-time fundamental snapshot."""
 
     payload = {
-        symbol: [bar.model_dump(mode="json") for bar in observations]
-        for symbol, observations in sorted(bars.items())
+        "bars": {
+            symbol: [bar.model_dump(mode="json") for bar in observations]
+            for symbol, observations in sorted(bars.items())
+        },
+        "fundamentals": {
+            symbol: [
+                snapshot.model_dump(mode="json")
+                for snapshot in sorted(
+                    snapshots,
+                    key=lambda item: (item.available_on, item.period_end),
+                )
+            ]
+            for symbol, snapshots in sorted((fundamentals or {}).items())
+        },
     }
     canonical = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(canonical.encode()).hexdigest()
