@@ -2,13 +2,17 @@
 import { computed, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 
+import ParameterForm from "@/components/ParameterForm.vue";
 import { api } from "@/lib/api";
+import type { ParameterValues } from "@/lib/jsonSchema";
 import type { StrategyCatalogItem } from "@/lib/types";
 
 const route = useRoute();
 const strategies = ref<StrategyCatalogItem[]>([]);
 const loading = ref(true);
 const error = ref("");
+const parameters = ref<ParameterValues>({});
+const parametersValid = ref(false);
 
 const selectedId = computed(() =>
   typeof route.query.strategy === "string" ? route.query.strategy : "",
@@ -67,15 +71,18 @@ onMounted(async () => {
           <span class="eyebrow">SELECTED STRATEGY</span>
           <h2>{{ selected.name }}</h2>
           <p>{{ selected.description }}</p>
-          <div class="coming-form">
-            <div></div>
-            <div></div>
-            <div></div>
-            <span>参数表单正在加载为可交互组件</span>
-          </div>
+          <ParameterForm
+            :key="selected.strategy_id"
+            v-model="parameters"
+            :schema="selected.parameter_schema"
+            @validity-change="parametersValid = $event"
+          />
           <div class="dataset-stamp">
             <strong>确定性合成数据</strong>
-            <span>不联网 · 3 只演示股票 · 结果可复现</span>
+            <span>
+              不联网 · 3 只演示股票 ·
+              {{ parametersValid ? "参数格式通过" : "请检查参数" }}
+            </span>
           </div>
         </template>
         <div v-else class="empty-experiment">
@@ -157,34 +164,6 @@ onMounted(async () => {
   color: var(--ink-soft);
   font-size: 13px;
   line-height: 1.8;
-}
-
-.coming-form {
-  display: grid;
-  gap: 13px;
-  margin-top: 38px;
-  padding: 27px;
-  border: 1px dashed var(--line-strong);
-}
-
-.coming-form div {
-  width: 100%;
-  height: 11px;
-  background: linear-gradient(90deg, var(--paper-deep) 32%, transparent 32%);
-}
-
-.coming-form div:nth-child(2) {
-  background: linear-gradient(90deg, var(--paper-deep) 53%, transparent 53%);
-}
-
-.coming-form div:nth-child(3) {
-  background: linear-gradient(90deg, var(--paper-deep) 41%, transparent 41%);
-}
-
-.coming-form span {
-  margin-top: 8px;
-  color: var(--ink-faint);
-  font-size: 11px;
 }
 
 .dataset-stamp {
