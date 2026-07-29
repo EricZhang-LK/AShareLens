@@ -30,6 +30,9 @@ baostock = [
 akshare = [
   "akshare>=1.18.81,<2",
 ]
+tushare = [
+  "tushare>=1.4,<2",
+]
 server = [
   "alembic>=1.14,<2",
   "pymysql>=1.1,<2",

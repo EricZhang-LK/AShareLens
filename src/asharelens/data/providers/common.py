@@ -46,6 +46,14 @@ def is_a_share_symbol(raw: str) -> bool:
     return True
 
 
+def to_tushare_symbol(raw: str) -> str:
+    """Convert any supported A-share code to Tushare's `000000.SH` form."""
+
+    normalized = normalize_a_share_symbol(raw)
+    exchange, code = normalized.split(".", maxsplit=1)
+    return f"{code}.{exchange.upper()}"
+
+
 def canonical_hash(value: object) -> str:
     """Hash JSON-compatible evidence independent of mapping insertion order."""
 
