@@ -5,6 +5,7 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from alembic.script import ScriptDirectory
+from sqlalchemy import func, select
 from typer.testing import CliRunner
 
 from asharelens.cli import app
@@ -15,6 +16,7 @@ from asharelens.storage.database import (
     create_database_engine,
     create_session_factory,
 )
+from asharelens.storage.models import RunnerJobRow, RunnerScheduleRow
 
 
 @pytest.fixture
@@ -104,3 +106,33 @@ def test_runner_schedule_and_reap_once(database_url: str) -> None:
 
     assert reaped.exit_code == 0
     assert "回收 1" in reaped.stdout
+
+
+def test_runner_init_and_manual_enqueue_are_idempotent(
+    database_url: str,
+) -> None:
+    first = CliRunner().invoke(app, ["runner", "init"])
+    repeated = CliRunner().invoke(app, ["runner", "init"])
+    enqueued = CliRunner().invoke(
+        app,
+        ["runner", "enqueue-daily", "--date", "2026-07-30"],
+    )
+    duplicate = CliRunner().invoke(
+        app,
+        ["runner", "enqueue-daily", "--date", "2026-07-30"],
+    )
+
+    assert first.exit_code == 0
+    assert repeated.exit_code == 0
+    assert "日程已就绪" in repeated.stdout
+    assert enqueued.exit_code == 0
+    assert duplicate.exit_code == 0
+    factory = create_session_factory(create_database_engine(database_url))
+    with factory() as session:
+        assert session.scalar(
+            select(func.count()).select_from(RunnerScheduleRow)
+        ) == 1
+        jobs = tuple(session.scalars(select(RunnerJobRow)))
+        assert len(jobs) == 1
+        assert jobs[0].job_type == "daily.pipeline"
+        assert jobs[0].queue == "default"

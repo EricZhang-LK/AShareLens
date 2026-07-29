@@ -83,13 +83,13 @@ retryable; invalid configuration and quality failures are terminal and visible.
 - Modify: `src/asharelens/cli.py`
 - Create/Modify: CLI and runtime tests
 
-- [ ] Parse environment configuration without logging credentials.
-- [ ] Register daily-pipeline and notification executors in real Runner commands.
-- [ ] Register console plus optional HTTPS webhook notifiers.
-- [ ] Add idempotent commands to initialize the daily schedule and run a manual
+- [x] Parse environment configuration without logging credentials.
+- [x] Register daily-pipeline and notification executors in real Runner commands.
+- [x] Register console plus optional HTTPS webhook notifiers.
+- [x] Add idempotent commands to initialize the daily schedule and run a manual
   daily cycle.
-- [ ] Fail fast on migrations/configuration and expose safe diagnostics.
-- [ ] Verify tests, lint and types; commit.
+- [x] Fail fast on migrations/configuration and expose safe diagnostics.
+- [x] Verify tests, lint and types; commit.
 
 ### Task 5: Docker one-command deployment
 
