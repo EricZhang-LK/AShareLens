@@ -29,6 +29,11 @@ def test_initial_migration_upgrades_and_downgrades_empty_database(
         "published_partitions",
         "runner_jobs",
         "runner_schedules",
+        "simulation_accounts",
+        "simulation_candidates",
+        "simulation_fills",
+        "simulation_orders",
+        "simulation_runs",
     } <= tables
 
     command.downgrade(config, "base")
@@ -41,4 +46,9 @@ def test_initial_migration_upgrades_and_downgrades_empty_database(
         "published_partitions",
         "runner_jobs",
         "runner_schedules",
+        "simulation_accounts",
+        "simulation_candidates",
+        "simulation_fills",
+        "simulation_orders",
+        "simulation_runs",
     } & remaining

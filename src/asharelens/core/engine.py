@@ -197,7 +197,7 @@ class DailyCycleEngine[ParamsT: BaseModel]:
         fingerprint = build_run_fingerprint(
             strategy_identity,
             self.params.model_dump(mode="json"),
-            _data_snapshot_id(bars),
+            build_data_snapshot_id(bars),
             ENGINE_VERSION,
         )
         return BacktestResult(
@@ -341,7 +341,11 @@ class DailyCycleEngine[ParamsT: BaseModel]:
         )
 
 
-def _data_snapshot_id(bars: Mapping[str, tuple[DailyBar, ...]]) -> str:
+def build_data_snapshot_id(
+    bars: Mapping[str, tuple[DailyBar, ...]],
+) -> str:
+    """Hash the exact point-in-time normalized market-data snapshot."""
+
     payload = {
         symbol: [bar.model_dump(mode="json") for bar in observations]
         for symbol, observations in sorted(bars.items())
