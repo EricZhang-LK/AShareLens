@@ -112,15 +112,15 @@ Commit: `feat: execute and recover durable jobs`
 - Create: `src/asharelens/runner/scheduler.py`
 - Create: `tests/runner/test_scheduler.py`
 
-- [ ] **Step 1: Write failing schedule tests**
+- [x] **Step 1: Write failing schedule tests**
 
 Prove enabled schedules emit exactly one job per planned fire time, missed fires are bounded, disabled schedules do nothing, and timezone conversion uses `Asia/Shanghai` at the boundary while persistence stays UTC.
 
-- [ ] **Step 2: Implement schedule model and scheduler**
+- [x] **Step 2: Implement schedule model and scheduler**
 
 The first format is a daily local time plus weekdays. Keep a schedule calculator protocol so cron support can be added without changing the queue.
 
-- [ ] **Step 3: Verify and commit**
+- [x] **Step 3: Verify and commit**
 
 Commit: `feat: schedule daily jobs persistently`
 

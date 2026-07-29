@@ -28,6 +28,7 @@ def test_initial_migration_upgrades_and_downgrades_empty_database(
         "ingestion_batches",
         "published_partitions",
         "runner_jobs",
+        "runner_schedules",
     } <= tables
 
     command.downgrade(config, "base")
@@ -39,4 +40,5 @@ def test_initial_migration_upgrades_and_downgrades_empty_database(
         "ingestion_batches",
         "published_partitions",
         "runner_jobs",
+        "runner_schedules",
     } & remaining
