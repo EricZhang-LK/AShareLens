@@ -10,6 +10,8 @@ dist/
 *.egg-info/
 __pycache__/
 *.py[cod]
+node_modules/
+.vite/
 .env
 .env.*
 !.env.example
