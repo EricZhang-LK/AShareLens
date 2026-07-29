@@ -25,6 +25,7 @@ class DailyBar(FrozenModel):
     volume: int = Field(ge=0)
     amount: float = Field(ge=0)
     is_trading: bool = True
+    is_st: bool = False
 
     @model_validator(mode="after")
     def validate_price_range(self) -> DailyBar:
