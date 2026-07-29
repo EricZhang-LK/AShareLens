@@ -126,12 +126,12 @@ class RuntimeSettings(BaseModel):
                 int(value)
                 for value in _csv(source["ASHARELENS_SCHEDULE_WEEKDAYS"])
             )
-        if "ASHARELENS_STRATEGY_PARAMS" in source:
+        if source.get("ASHARELENS_STRATEGY_PARAMS", "").strip():
             values["strategy_parameters"] = _json_object(
                 source["ASHARELENS_STRATEGY_PARAMS"],
                 name="ASHARELENS_STRATEGY_PARAMS",
             )
-        if "ASHARELENS_EXECUTION_MODEL" in source:
+        if source.get("ASHARELENS_EXECUTION_MODEL", "").strip():
             values["execution_model"] = _json_object(
                 source["ASHARELENS_EXECUTION_MODEL"],
                 name="ASHARELENS_EXECUTION_MODEL",

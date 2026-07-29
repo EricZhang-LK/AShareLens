@@ -101,13 +101,13 @@ retryable; invalid configuration and quality failures are terminal and visible.
 - Modify: `.github/workflows/ci.yml`
 - Modify/Create: deployment tests and documentation
 
-- [ ] Build Vue assets and Python runtime in reproducible multi-stage images.
-- [ ] Run as a non-root user with health checks and graceful shutdown.
-- [ ] Compose MySQL 8.4, one-shot migration, Web, default Runner and notification
+- [x] Build Vue assets and Python runtime in reproducible multi-stage images.
+- [x] Run as a non-root user with health checks and graceful shutdown.
+- [x] Compose MySQL 8.4, one-shot migration, Web, default Runner and notification
   Runner; expose only the Web port on loopback by default.
-- [ ] Persist MySQL data, keep secrets outside images, and declare startup order.
-- [ ] Validate Dockerfile/Compose structure locally and build images in CI.
-- [ ] Verify tests; commit.
+- [x] Persist MySQL data, keep secrets outside images, and declare startup order.
+- [x] Validate Dockerfile/Compose structure locally and build images in CI.
+- [x] Verify tests; commit.
 
 ### Task 6: GitHub-ready open-source release surface
 

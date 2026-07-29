@@ -1,0 +1,127 @@
+name: asharelens
+
+x-app-environment: &app-environment
+  TZ: Asia/Shanghai
+  ASHARELENS_DATABASE_URL: mysql+pymysql://asharelens:${MYSQL_PASSWORD:-asharelens_local_2026}@mysql:3306/asharelens?charset=utf8mb4
+  ASHARELENS_PROVIDERS: ${ASHARELENS_PROVIDERS:-baostock}
+  ASHARELENS_SYMBOLS: ${ASHARELENS_SYMBOLS:-sh.600000,sz.000001,sz.000858}
+  ASHARELENS_STRATEGY: ${ASHARELENS_STRATEGY:-moving_average}
+  ASHARELENS_STRATEGY_PARAMS: ${ASHARELENS_STRATEGY_PARAMS:-}
+  ASHARELENS_ACCOUNT_NAME: ${ASHARELENS_ACCOUNT_NAME:-AShareLens 默认研究组合}
+  ASHARELENS_LOOKBACK_DAYS: ${ASHARELENS_LOOKBACK_DAYS:-550}
+  ASHARELENS_MIN_COVERAGE: ${ASHARELENS_MIN_COVERAGE:-0.98}
+  ASHARELENS_INITIAL_CASH: ${ASHARELENS_INITIAL_CASH:-1000000}
+  ASHARELENS_TOP_N: ${ASHARELENS_TOP_N:-10}
+  ASHARELENS_MAX_WEIGHT: ${ASHARELENS_MAX_WEIGHT:-0.1}
+  ASHARELENS_EXECUTION_MODEL: ${ASHARELENS_EXECUTION_MODEL:-}
+  ASHARELENS_NOTIFIERS: ${ASHARELENS_NOTIFIERS:-console}
+  ASHARELENS_WEBHOOK_URL: ${ASHARELENS_WEBHOOK_URL:-}
+  TUSHARE_TOKEN: ${TUSHARE_TOKEN:-}
+  ASHARELENS_SCHEDULE_NAME: ${ASHARELENS_SCHEDULE_NAME:-AShareLens 每日选股}
+  ASHARELENS_SCHEDULE_TIME: ${ASHARELENS_SCHEDULE_TIME:-18:00}
+  ASHARELENS_SCHEDULE_TIMEZONE: ${ASHARELENS_SCHEDULE_TIMEZONE:-Asia/Shanghai}
+  ASHARELENS_SCHEDULE_WEEKDAYS: ${ASHARELENS_SCHEDULE_WEEKDAYS:-0,1,2,3,4}
+
+x-app-base: &app-base
+  build:
+    context: .
+    dockerfile: Dockerfile
+  image: asharelens:${ASHARELENS_IMAGE_TAG:-local}
+  environment: *app-environment
+  init: true
+  security_opt:
+    - no-new-privileges:true
+
+services:
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Shanghai
+      MYSQL_DATABASE: asharelens
+      MYSQL_USER: asharelens
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-asharelens_local_2026}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-asharelens_root_local_2026}
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - mysqladmin ping -h 127.0.0.1 -uroot -p"$${MYSQL_ROOT_PASSWORD}" --silent
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+    security_opt:
+      - no-new-privileges:true
+
+  migrate:
+    <<: *app-base
+    command: ["alembic", "upgrade", "head"]
+    restart: "no"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      disable: true
+
+  initialize:
+    <<: *app-base
+    command: ["asharelens", "runner", "init"]
+    restart: "no"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      disable: true
+
+  web:
+    <<: *app-base
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${ASHARELENS_PORT:-8000}:8000"
+    depends_on:
+      initialize:
+        condition: service_completed_successfully
+
+  runner:
+    <<: *app-base
+    command:
+      - asharelens
+      - runner
+      - start
+      - --queue
+      - default
+      - --poll-seconds
+      - "2"
+    restart: unless-stopped
+    stop_grace_period: 30s
+    depends_on:
+      initialize:
+        condition: service_completed_successfully
+    healthcheck:
+      disable: true
+
+  runner-notifications:
+    <<: *app-base
+    command:
+      - asharelens
+      - runner
+      - work
+      - --queue
+      - notifications
+      - --poll-seconds
+      - "2"
+    restart: unless-stopped
+    stop_grace_period: 30s
+    depends_on:
+      initialize:
+        condition: service_completed_successfully
+    healthcheck:
+      disable: true
+
+volumes:
+  mysql-data:
