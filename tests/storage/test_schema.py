@@ -20,6 +20,7 @@ def test_schema_creates_on_in_memory_sqlite_for_repository_tests() -> None:
         "daily_bars",
         "data_partitions",
         "ingestion_batches",
+        "notification_deliveries",
         "published_partitions",
         "runner_jobs",
         "runner_schedules",

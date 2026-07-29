@@ -74,7 +74,7 @@
 - [x] Define `NotifierPlugin`, capabilities and sanitized delivery result.
 - [x] Verify and commit.
 
-### Task 6: Transactional notification outbox
+### Task 6: Transactional notification delivery ledger
 
 **Files:**
 - Modify: `src/asharelens/storage/models.py`
@@ -83,9 +83,9 @@
 - Create: `tests/notifications/test_outbox.py`
 - Modify: `tests/storage/test_migration.py`
 
-- [ ] Test enqueue idempotency, claim lease, success, retry, terminal failure and secret-free errors.
-- [ ] Add MySQL `SKIP LOCKED` integration coverage.
-- [ ] Verify and commit.
+- [x] Test atomic durable-job enqueue, idempotency, success, terminal failure and secret-free errors.
+- [x] Reuse Runner Job lease/retry/MySQL `SKIP LOCKED`; do not duplicate its state machine.
+- [x] Verify and commit.
 
 ### Task 7: Console and generic Webhook plugins
 
