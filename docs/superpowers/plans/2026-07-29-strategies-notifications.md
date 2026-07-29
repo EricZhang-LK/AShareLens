@@ -58,9 +58,9 @@
 - Create: `tests/strategies/test_trend_pullback.py`
 - Create: `tests/strategies/test_registry.py`
 
-- [ ] Test trend, rising moving average, recent-high pullback band, volume contraction, insufficient history and explanations.
-- [ ] Register four built-ins and expose metadata plus Pydantic JSON Schema without constructing parameters.
-- [ ] Verify and commit `feat: complete built in strategy catalog`.
+- [x] Test trend, rising moving average, recent-high pullback band, volume contraction, insufficient history and explanations.
+- [x] Register four built-ins and expose metadata plus Pydantic JSON Schema without constructing parameters.
+- [x] Verify and commit `feat: complete built in strategy catalog`.
 
 ### Task 5: Notifier protocol and message renderer
 
