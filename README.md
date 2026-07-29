@@ -2,8 +2,9 @@
 
 开箱即用、可解释、可复现的本地 A 股量化选股平台。
 
-> 当前处于早期开发阶段。仓库已经具备确定性离线闭环、BaoStock Provider、
-> MySQL 持久化和可恢复 Runner；AkShare、Tushare、Web 与 Docker 能力仍在开发。
+> 当前处于早期开发阶段。仓库已经具备确定性离线闭环、三种数据源、
+> 四种内置策略、MySQL 持久化、可恢复 Runner 和可靠通知；Web 与 Docker
+> 能力仍在开发。
 
 ## 项目原则
 
@@ -96,6 +97,18 @@ $env:ASHARELENS_DATABASE_URL = "mysql+pymysql://user:password@127.0.0.1:3306/ash
 
 每日模拟账户和历史回测调用同一个 `DailyCycleEngine`。每个模拟日期会保存策略版本、
 参数、精确数据分区、输入/输出状态哈希、解释型候选、订单、成交和净值。
+
+## 策略与通知
+
+首批内置策略包括均线交叉、动量 RPS、价值质量和趋势回踩。策略参数使用 Pydantic
+模型定义，同一份 JSON Schema 将用于后续 Web 表单自动生成。价值质量策略只接受
+带 `as_of_date` 的时点基本面，拒绝把未来披露的数据带入历史回测。
+
+通知采用 MySQL 事务性 Outbox：业务事务同时保存消息和 `notification.deliver`
+任务，复用 Runner 的租约、心跳与重试机制。控制台渠道用于零配置预览；通用 HTTPS
+Webhook 向飞书、企微、钉钉等中继服务发送渠道无关 JSON。每次请求同时在消息体和
+HTTP Header 中携带幂等键，接收端可据此消除极端进程故障下的重复投递。Webhook
+地址只存在于运行时配置中，错误日志不会记录完整地址或密钥。
 
 完整设计见
 [`docs/superpowers/specs/2026-07-29-asharelens-platform-design.md`](docs/superpowers/specs/2026-07-29-asharelens-platform-design.md)。

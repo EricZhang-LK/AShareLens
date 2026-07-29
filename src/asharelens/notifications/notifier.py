@@ -37,6 +37,14 @@ class NotificationError(RuntimeError):
         super().__init__(message)
 
 
+class DuplicateNotifier(ValueError):
+    """A process cannot register two transports under one public ID."""
+
+
+class UnknownNotifier(LookupError):
+    """A persisted delivery references a notifier absent from this process."""
+
+
 class NotifierPlugin(Protocol):
     """Transport boundary; messages are already rendered."""
 
@@ -50,3 +58,28 @@ class NotifierPlugin(Protocol):
     ) -> DeliveryReceipt:
         """Deliver one message or raise `NotificationError`."""
         ...
+
+
+class NotifierRegistry:
+    """Resolve configured notifier plugins without exposing their secrets."""
+
+    def __init__(self) -> None:
+        self._plugins: dict[str, NotifierPlugin] = {}
+
+    def register(self, plugin: NotifierPlugin) -> None:
+        """Register one plugin under its metadata ID."""
+
+        notifier_id = plugin.metadata.notifier_id
+        if notifier_id in self._plugins:
+            raise DuplicateNotifier(notifier_id)
+        self._plugins[notifier_id] = plugin
+
+    def resolve(self, notifier_id: str) -> NotifierPlugin:
+        """Return a configured plugin or fail with only its public ID."""
+
+        try:
+            return self._plugins[notifier_id]
+        except KeyError:
+            raise UnknownNotifier(
+                f"no notifier registered for {notifier_id!r}"
+            ) from None
