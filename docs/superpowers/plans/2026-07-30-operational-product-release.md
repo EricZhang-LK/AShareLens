@@ -50,13 +50,13 @@ retryable; invalid configuration and quality failures are terminal and visible.
 - Create: `docs/strategy-plugin.md`
 - Modify/Create: registry and API tests
 
-- [ ] Discover `asharelens.strategies` entry points in deterministic order.
-- [ ] Validate metadata, plugin API compatibility, duplicate IDs and parameter
+- [x] Discover `asharelens.strategies` entry points in deterministic order.
+- [x] Validate metadata, plugin API compatibility, duplicate IDs and parameter
   models before exposing a plugin.
-- [ ] Merge built-ins and installed plugins into the same JSON-Schema catalog.
-- [ ] Provide a minimal independently installable strategy example and state
+- [x] Merge built-ins and installed plugins into the same JSON-Schema catalog.
+- [x] Provide a minimal independently installable strategy example and state
   clearly that plugins are trusted Python code.
-- [ ] Verify tests, lint and types; commit.
+- [x] Verify tests, lint and types; commit.
 
 ### Task 3: Traceable market synchronization and daily pipeline
 

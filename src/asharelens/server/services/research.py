@@ -3,13 +3,9 @@
 from __future__ import annotations
 
 from datetime import date
-from typing import cast
-
-from pydantic import BaseModel
 
 from asharelens.core.engine import DailyCycleEngine
 from asharelens.core.execution import OpeningExecutionModel
-from asharelens.core.strategy import StrategyPlugin
 from asharelens.data.provider import DataProviderPlugin
 from asharelens.data.providers.akshare import AkShareProvider
 from asharelens.data.providers.baostock import BaoStockProvider
@@ -27,7 +23,7 @@ from asharelens.server.models import (
     StrategyCatalogItem,
     StrategyCatalogResponse,
 )
-from asharelens.strategies.registry import BuiltInStrategyRegistry
+from asharelens.strategies.registry import StrategyRegistry
 
 _DEMO_UNSUPPORTED = {
     "value_quality": "离线演示不伪造财务披露时点数据；请在配置基本面数据后运行该策略。"
@@ -49,10 +45,10 @@ class ResearchService:
     def __init__(
         self,
         *,
-        strategies: BuiltInStrategyRegistry | None = None,
+        strategies: StrategyRegistry | None = None,
         providers: tuple[DataProviderPlugin, ...] | None = None,
     ) -> None:
-        self._strategies = strategies or BuiltInStrategyRegistry()
+        self._strategies = strategies or StrategyRegistry()
         self._providers = providers or (
             BaoStockProvider(),
             AkShareProvider(),
@@ -116,8 +112,7 @@ class ResearchService:
 
         if request.strategy_id in _DEMO_UNSUPPORTED:
             raise DemoDatasetUnsupported(_DEMO_UNSUPPORTED[request.strategy_id])
-        raw_plugin = self._strategies.get(request.strategy_id)
-        plugin = cast(StrategyPlugin[BaseModel], raw_plugin)
+        plugin = self._strategies.get(request.strategy_id)
         params = plugin.parameter_model().model_validate(request.parameters)
         bars = generate_demo_bars(date(2025, 1, 2), sessions=request.sessions)
         engine = DailyCycleEngine(
