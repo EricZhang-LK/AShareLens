@@ -88,12 +88,12 @@ TypeScript and Vite; official Vue Router and Vite release guidance.
 - Create: `web/src/lib/jsonSchema.ts`
 - Create: `web/src/components/__tests__/ParameterForm.spec.ts`
 
-- [ ] Support the strategy schema subset: integer, number, boolean, string,
+- [x] Support the strategy schema subset: integer, number, boolean, string,
   enum, defaults, descriptions, bounds, and required fields.
-- [ ] Test defaults, coercion, accessible labels, constraints, errors, reset, and
+- [x] Test defaults, coercion, accessible labels, constraints, errors, reset, and
   emitted normalized parameter values.
-- [ ] Preserve unknown future schema fields as an explicit unsupported warning.
-- [ ] Verify and commit.
+- [x] Preserve unknown future schema fields as an explicit unsupported warning.
+- [x] Verify and commit.
 
 ### Task 5: Interactive backtest and explainable result views
 

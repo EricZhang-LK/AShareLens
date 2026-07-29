@@ -8,6 +8,7 @@ export interface JsonSchemaProperty {
   maximum?: number;
   exclusiveMinimum?: number;
   exclusiveMaximum?: number;
+  [key: string]: unknown;
 }
 
 export interface JsonSchema {
@@ -17,6 +18,7 @@ export interface JsonSchema {
   properties?: Record<string, JsonSchemaProperty>;
   required?: string[];
   additionalProperties?: boolean;
+  [key: string]: unknown;
 }
 
 export interface StrategyCatalogItem {
