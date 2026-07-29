@@ -92,6 +92,11 @@ class OpeningExecutionModel(BaseModel):
             raise OrderRejected("missing_bar", "next-session market bar is missing")
         if bar.symbol != order.symbol:
             raise OrderRejected("symbol_mismatch", "order and market bar symbols differ")
+        if not bar.is_trading:
+            raise OrderRejected(
+                "not_trading",
+                "the instrument is not trading in the execution session",
+            )
         if bar.trade_date <= order.signal_date:
             raise OrderRejected(
                 "not_next_session",

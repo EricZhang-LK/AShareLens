@@ -122,9 +122,9 @@ retryable; invalid configuration and quality failures are terminal and visible.
 - Create: `docs/architecture.md`
 - Create: `docs/operations.md`
 
-- [ ] Write a Chinese-first five-minute quick start and honest capability matrix.
-- [ ] Document architecture, execution timing, data lineage, plugin development,
+- [x] Write a Chinese-first five-minute quick start and honest capability matrix.
+- [x] Document architecture, execution timing, data lineage, plugin development,
   backup/upgrade/recovery and troubleshooting.
-- [ ] Add contribution, security, conduct, issue and pull-request workflows.
-- [ ] Add release metadata, final license/security scan and clean-install checks.
-- [ ] Run the full Python/frontend/build test matrix and record evidence; commit.
+- [x] Add contribution, security, conduct, issue and pull-request workflows.
+- [x] Add release metadata, final license/security scan and clean-install checks.
+- [x] Run the full Python/frontend/build test matrix and record evidence; commit.
