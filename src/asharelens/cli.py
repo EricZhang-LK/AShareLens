@@ -10,6 +10,8 @@ import typer
 
 from asharelens.core.engine import DailyCycleEngine
 from asharelens.core.execution import OpeningExecutionModel
+from asharelens.data.provider import DataProviderPlugin
+from asharelens.data.providers.baostock import BaoStockProvider
 from asharelens.demo.data import generate_demo_bars
 from asharelens.strategies.moving_average import (
     MovingAverageParams,
@@ -21,11 +23,47 @@ app = typer.Typer(
     help="AShareLens 本地 A 股量化选股平台。",
     no_args_is_help=True,
 )
+provider_app = typer.Typer(help="查看和诊断市场数据源。")
+app.add_typer(provider_app, name="provider")
 
 
 @app.callback()
 def main() -> None:
     """AShareLens 命令组。"""
+
+
+def _provider_registry() -> dict[str, DataProviderPlugin]:
+    return {"baostock": BaoStockProvider()}
+
+
+@provider_app.command("list")
+def provider_list() -> None:
+    """列出内置 Provider，不连接外部服务。"""
+
+    for provider_id, provider in sorted(_provider_registry().items()):
+        registration = "需要注册" if provider.metadata.requires_registration else "免注册"
+        default_label = "默认" if provider_id == "baostock" else "备用"
+        typer.echo(
+            f"{provider_id} | {default_label} | {registration} | "
+            '可选安装：pip install "asharelens[baostock]"'
+        )
+
+
+@provider_app.command("check")
+def provider_check(provider_id: str) -> None:
+    """执行一次脱敏的 Provider 健康检查。"""
+
+    provider = _provider_registry().get(provider_id)
+    if provider is None:
+        typer.echo(f"未知数据源：{provider_id}")
+        raise typer.Exit(code=2)
+
+    health = provider.healthcheck()
+    status = "正常" if health.ok else "失败"
+    latency = f"{health.latency_ms}ms" if health.latency_ms is not None else "未记录"
+    typer.echo(f"{provider_id} | {status} | {latency} | {health.message}")
+    if not health.ok:
+        raise typer.Exit(code=1)
 
 
 @app.command()

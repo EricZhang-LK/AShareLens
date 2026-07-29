@@ -32,6 +32,20 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m asharelens.cli demo --json
 ```
 
+## 免费真实数据
+
+BaoStock 是默认真实数据源，匿名登录、不要求用户申请 Token。它作为可选依赖安装，
+基础 SDK 和离线演示不会被数据源 SDK 绑定。
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -e ".[baostock,dev]"
+.\.venv\Scripts\python.exe -m asharelens.cli provider list
+.\.venv\Scripts\python.exe -m asharelens.cli provider check baostock
+```
+
+当前 BaoStock Provider 提供沪深股票列表、交易日历和日线行情。北交所数据将由
+AkShare 补充 Provider 覆盖。外部数据的可用性、许可和使用限制以数据提供方说明为准。
+
 完整设计见
 [`docs/superpowers/specs/2026-07-29-asharelens-platform-design.md`](docs/superpowers/specs/2026-07-29-asharelens-platform-design.md)。
 

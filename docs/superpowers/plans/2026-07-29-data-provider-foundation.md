@@ -34,7 +34,7 @@
 - Consumes: `asharelens.core.models.DailyBar`.
 - Produces: `Dataset`, `Adjustment`, `Instrument`, `TradingSession`, `ProviderMetadata`, `ProviderHealth`, generic `DataBatch[RecordT]`, `DataProviderPlugin`, and `ProviderError`.
 
-- [ ] **Step 1: Write failing contract tests**
+- [x] **Step 1: Write failing contract tests**
 
 Tests must prove that:
 
@@ -44,13 +44,13 @@ Tests must prove that:
 - `ProviderMetadata.model_json_schema()` exposes a string `plugin_api_version`.
 - `ProviderError` exposes stable `provider_id`, `error_code`, and retryability.
 
-- [ ] **Step 2: Run and verify RED**
+- [x] **Step 2: Run and verify RED**
 
 Run: `python -m pytest tests/data/test_provider_contract.py -v`
 
 Expected: import failure because `asharelens.data` does not exist.
 
-- [ ] **Step 3: Implement immutable contracts**
+- [x] **Step 3: Implement immutable contracts**
 
 Use frozen Pydantic models and a structural `DataProviderPlugin` protocol with:
 
@@ -67,7 +67,7 @@ def fetch_daily_bars(
 ) -> DataBatch[DailyBar]: ...
 ```
 
-- [ ] **Step 4: Run tests, Ruff, and Mypy**
+- [x] **Step 4: Run tests, Ruff, and Mypy**
 
 Run:
 
@@ -78,7 +78,7 @@ python -m ruff check .
 python -m mypy src
 ```
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```text
 git add src/asharelens/data tests/data
@@ -95,7 +95,7 @@ git commit -m "feat: define normalized data provider contracts"
 - Consumes: `DataBatch[DailyBar]`.
 - Produces: `PartitionKey`, `DataPartition`, `SnapshotManifest`, and `partition_daily_bars(batch)`.
 
-- [ ] **Step 1: Write failing lineage tests**
+- [x] **Step 1: Write failing lineage tests**
 
 Tests must prove that:
 
@@ -105,15 +105,15 @@ Tests must prove that:
 - Snapshot IDs are stable under partition order.
 - Constructing one partition with records from multiple providers is impossible through the public API.
 
-- [ ] **Step 2: Run and verify RED**
+- [x] **Step 2: Run and verify RED**
 
 Run: `python -m pytest tests/data/test_partition.py -v`
 
-- [ ] **Step 3: Implement canonical content hashing**
+- [x] **Step 3: Implement canonical content hashing**
 
 Canonicalize records with Pydantic JSON mode, sort by `(trade_date, symbol)`, serialize with sorted UTF-8 JSON keys and compact separators, then hash with SHA-256. The snapshot manifest stores partition keys, hashes, provider IDs, source batch IDs and schema versions.
 
-- [ ] **Step 4: Run focused and full verification**
+- [x] **Step 4: Run focused and full verification**
 
 Run:
 
@@ -124,7 +124,7 @@ python -m ruff check .
 python -m mypy src
 ```
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```text
 git add src/asharelens/data/partition.py tests/data/test_partition.py
@@ -141,7 +141,7 @@ git commit -m "feat: add versioned data partitions and lineage"
 - Consumes: `DataPartition`.
 - Produces: `QualitySeverity`, `QualityIssue`, `QualityReport`, and `DailyBarQualityGate.evaluate(...)`.
 
-- [ ] **Step 1: Write failing quality behavior tests**
+- [x] **Step 1: Write failing quality behavior tests**
 
 Tests must prove that:
 
@@ -151,15 +151,15 @@ Tests must prove that:
 - A complete partition passes and exposes `publishable=True`.
 - Warning-only partitions remain publishable but are marked degraded.
 
-- [ ] **Step 2: Run and verify RED**
+- [x] **Step 2: Run and verify RED**
 
 Run: `python -m pytest tests/data/test_quality_gate.py -v`
 
-- [ ] **Step 3: Implement deterministic issue codes**
+- [x] **Step 3: Implement deterministic issue codes**
 
 Use stable codes `duplicate_record`, `coverage_below_threshold`, `zero_volume`, and `unexpected_trade_date`. Sort issues by severity, code, symbol and date so reports are reproducible.
 
-- [ ] **Step 4: Run focused and full verification**
+- [x] **Step 4: Run focused and full verification**
 
 Run:
 
@@ -170,7 +170,7 @@ python -m ruff check .
 python -m mypy src
 ```
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```text
 git add src/asharelens/data/quality.py tests/data/test_quality_gate.py
@@ -187,7 +187,7 @@ git commit -m "feat: gate daily data quality before publication"
 - Consumes: ordered Providers and `DailyBarQualityGate`.
 - Produces: `ProviderRouter.fetch_daily_partition(...) -> RoutedPartition`.
 
-- [ ] **Step 1: Write failing routing tests with real in-memory fakes**
+- [x] **Step 1: Write failing routing tests with real in-memory fakes**
 
 Tests must prove that:
 
@@ -197,15 +197,15 @@ Tests must prove that:
 - Rows from primary and fallback are never combined.
 - If all Providers fail, the raised aggregate error preserves each attempt.
 
-- [ ] **Step 2: Run and verify RED**
+- [x] **Step 2: Run and verify RED**
 
 Run: `python -m pytest tests/data/test_provider_router.py -v`
 
-- [ ] **Step 3: Implement sequential partition routing**
+- [x] **Step 3: Implement sequential partition routing**
 
 For each Provider, request the complete symbol set for one trading date, form one partition, run the gate, and accept only a publishable result. Never fill primary gaps with fallback rows.
 
-- [ ] **Step 4: Run focused and full verification**
+- [x] **Step 4: Run focused and full verification**
 
 Run:
 
@@ -216,7 +216,7 @@ python -m ruff check .
 python -m mypy src
 ```
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```text
 git add src/asharelens/data/router.py tests/data/test_provider_router.py
@@ -235,7 +235,7 @@ git commit -m "feat: route complete data partitions across providers"
 - Consumes: BaoStock login, query, ResultSet, and logout APIs through `BaoStockGateway`.
 - Produces: `BaoStockProvider` implementing `DataProviderPlugin`.
 
-- [ ] **Step 1: Add the optional dependency**
+- [x] **Step 1: Add the optional dependency**
 
 Add:
 
@@ -245,7 +245,7 @@ baostock = ["baostock>=0.9.3,<1"]
 
 The base package and `asharelens demo` must remain usable without this extra.
 
-- [ ] **Step 2: Write failing adapter tests**
+- [x] **Step 2: Write failing adapter tests**
 
 Use an injected fake Gateway and complete fake ResultSet. Tests must prove:
 
@@ -256,11 +256,11 @@ Use an injected fake Gateway and complete fake ResultSet. Tests must prove:
 - Logout runs after success and after query failure.
 - Returned batch metadata identifies `baostock` and the original request.
 
-- [ ] **Step 3: Run and verify RED**
+- [x] **Step 3: Run and verify RED**
 
 Run: `python -m pytest tests/data/providers/test_baostock.py -v`
 
-- [ ] **Step 4: Implement the Gateway and Provider**
+- [x] **Step 4: Implement the Gateway and Provider**
 
 Import BaoStock lazily. Use the documented daily fields:
 
@@ -270,7 +270,7 @@ date,code,open,high,low,close,volume,amount,tradestatus,isST
 
 Query one symbol at a time, set `frequency="d"`, use ISO dates, convert SDK errors to stable provider errors, and always logout in `finally`.
 
-- [ ] **Step 5: Run focused and full verification**
+- [x] **Step 5: Run focused and full verification**
 
 Run:
 
@@ -282,7 +282,7 @@ python -m mypy src
 python -m asharelens.cli demo --json
 ```
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```text
 git add pyproject.toml src/asharelens/data/providers tests/data/providers
@@ -301,19 +301,19 @@ git commit -m "feat: add zero-registration baostock provider"
 - Consumes: Provider metadata and healthcheck.
 - Produces: `asharelens provider list` and `asharelens provider check baostock`.
 
-- [ ] **Step 1: Write failing CLI tests**
+- [x] **Step 1: Write failing CLI tests**
 
 Tests must prove that provider listing works without BaoStock installed, identifies it as an optional default Provider, and health-check errors are printed without exposing credentials or tracebacks.
 
-- [ ] **Step 2: Run and verify RED**
+- [x] **Step 2: Run and verify RED**
 
 Run: `python -m pytest tests/test_provider_cli.py -v`
 
-- [ ] **Step 3: Implement diagnostics and Chinese documentation**
+- [x] **Step 3: Implement diagnostics and Chinese documentation**
 
 Document installation with `pip install "asharelens[baostock]"`, the no-registration property, network requirements, data-license responsibility, and the distinction between offline demo and real data.
 
-- [ ] **Step 4: Run phase verification**
+- [x] **Step 4: Run phase verification**
 
 Run:
 
@@ -326,10 +326,21 @@ python -m asharelens.cli demo --json
 python -m asharelens.cli provider list
 ```
 
-- [ ] **Step 5: Record evidence and commit**
+- [x] **Step 5: Record evidence and commit**
 
 ```text
 git add src/asharelens/cli.py tests/test_provider_cli.py README.md docs/superpowers/plans/2026-07-29-data-provider-foundation.md
 git commit -m "docs: record data provider phase verification"
 ```
 
+## Verification Evidence
+
+- `pytest --cov=asharelens`: 61 项测试通过，综合覆盖率 90%。
+- `ruff check .`：通过。
+- `mypy src`：严格模式通过。
+- `python -m build --no-isolation`：成功生成源码包和 wheel。
+- `asharelens demo --json`：离线闭环继续可用且输出确定。
+- `asharelens provider list`：BaoStock 被标记为默认、免注册、可选安装。
+- BaoStock 0.9.3 真实匿名查询验证：`sh.600000` 在 2026-07-27 至
+  2026-07-28 返回两条规范化日线，收盘价、交易状态、批次哈希均正确。
+- 路由测试证明质量失败时切换完整分区，主源与备用源记录没有行级混合。
