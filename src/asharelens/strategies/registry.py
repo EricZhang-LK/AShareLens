@@ -74,3 +74,25 @@ class BuiltInStrategyRegistry:
             )
             for _, plugin in sorted(self._plugins.items())
         )
+
+    def describe_one(self, strategy_id: str) -> StrategyDescriptor:
+        """Describe one installed strategy or raise `StrategyNotFound`."""
+
+        plugin = self.get(strategy_id)
+        return StrategyDescriptor(
+            strategy_id=plugin.metadata.strategy_id,
+            name=plugin.metadata.name,
+            version=plugin.metadata.version,
+            description=plugin.metadata.description,
+            min_history_sessions=plugin.metadata.min_history_sessions,
+            parameter_schema=plugin.parameter_model().model_json_schema(),
+        )
+
+    def validate_parameters(
+        self,
+        strategy_id: str,
+        parameters: dict[str, Any],
+    ) -> BaseModel:
+        """Normalize public parameters with the plugin-owned Pydantic model."""
+
+        return self.get(strategy_id).parameter_model().model_validate(parameters)

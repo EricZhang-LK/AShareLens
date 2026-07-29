@@ -50,13 +50,13 @@ TypeScript and Vite; official Vue Router and Vite release guidance.
 - Create: `src/asharelens/server/routes/research.py`
 - Create: `tests/server/test_research_api.py`
 
-- [ ] Test provider catalog and stable strategy catalog ordering.
-- [ ] Test schema-driven parameter validation and field-level 422 errors.
-- [ ] Test deterministic demo backtests, explanations, NAV series, summary
+- [x] Test provider catalog and stable strategy catalog ordering.
+- [x] Test schema-driven parameter validation and field-level 422 errors.
+- [x] Test deterministic demo backtests, explanations, NAV series, summary
   metrics, and identical fingerprints for identical inputs.
-- [ ] Keep all four strategies discoverable; disclose when demo fundamentals are
+- [x] Keep all four strategies discoverable; disclose when demo fundamentals are
   unavailable instead of fabricating them.
-- [ ] Verify and commit.
+- [x] Verify and commit.
 
 ### Task 3: Vue TypeScript shell and design system
 

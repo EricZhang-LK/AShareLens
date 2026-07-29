@@ -12,13 +12,15 @@ def build_run_fingerprint(
     parameters: Mapping[str, object],
     data_snapshot_id: str,
     engine_version: str,
+    run_config: Mapping[str, object] | None = None,
 ) -> str:
-    """Hash the minimum immutable inputs of a core-only run."""
+    """Hash every immutable input that can alter a core-only run."""
 
     payload = {
         "data_snapshot_id": data_snapshot_id,
         "engine_version": engine_version,
         "parameters": parameters,
+        "run_config": run_config or {},
         "strategy_code_hash": strategy_code_hash,
     }
     canonical = json.dumps(
