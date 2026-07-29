@@ -1,4 +1,4 @@
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 
 import pytest
 from pydantic import ValidationError
@@ -31,7 +31,7 @@ def test_data_batch_preserves_lineage_and_request_metadata() -> None:
         dataset=Dataset.INSTRUMENTS,
         provider_id="fixture",
         provider_version="1.0",
-        fetched_at=datetime(2026, 7, 29, 10, 0, tzinfo=timezone.utc),
+        fetched_at=datetime(2026, 7, 29, 10, 0, tzinfo=UTC),
         request={"as_of": "2026-07-29"},
         source_batch_id="batch-1",
         content_hash="a" * 64,
