@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 from importlib.metadata import version
+from pathlib import Path
 from uuid import uuid4
 
 from fastapi import FastAPI, Request
@@ -16,6 +17,7 @@ from asharelens.server.errors import (
     api_problem_handler,
     http_error_handler,
 )
+from asharelens.server.frontend import mount_frontend
 from asharelens.server.models import HealthResponse
 from asharelens.server.routes.research import build_research_router
 from asharelens.server.services.research import ResearchService
@@ -26,6 +28,7 @@ _REQUEST_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._:-]{0,63}")
 def create_app(
     *,
     research_service: ResearchService | None = None,
+    frontend_dir: Path | None = None,
 ) -> FastAPI:
     """Construct one side-effect-free local API application."""
 
@@ -65,6 +68,16 @@ def create_app(
     async def health() -> HealthResponse:
         return HealthResponse(version=version("asharelens"))
 
+    @app.api_route(
+        "/api/{unknown_path:path}",
+        methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        include_in_schema=False,
+    )
+    async def unknown_api(unknown_path: str) -> None:
+        del unknown_path
+        raise HTTPException(status_code=404)
+
+    mount_frontend(app, directory=frontend_dir)
     return app
 
 

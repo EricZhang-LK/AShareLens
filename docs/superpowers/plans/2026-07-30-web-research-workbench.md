@@ -121,12 +121,12 @@ TypeScript and Vite; official Vue Router and Vite release guidance.
 - Create: `tests/server/test_frontend.py`
 - Modify: `README.md`
 
-- [ ] Serve built assets with SPA fallback after `/api/v1` routes.
-- [ ] Add `asharelens web` with local-only default host and explicit opt-in for
+- [x] Serve built assets with SPA fallback after `/api/v1` routes.
+- [x] Add `asharelens web` with local-only default host and explicit opt-in for
   other bindings.
-- [ ] Test missing-build diagnostics, API route precedence, index/assets and SPA
+- [x] Test missing-build diagnostics, API route precedence, index/assets and SPA
   fallback.
-- [ ] Verify and commit.
+- [x] Verify and commit.
 
 ### Task 7: Phase audit
 

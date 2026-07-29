@@ -54,6 +54,50 @@ def main() -> None:
     """AShareLens 命令组。"""
 
 
+@app.command("web")
+def web_server(
+    host: Annotated[
+        str,
+        typer.Option("--host", help="监听地址；默认仅本机可访问。"),
+    ] = "127.0.0.1",
+    port: Annotated[
+        int,
+        typer.Option("--port", min=1, max=65535, help="监听端口。"),
+    ] = 8000,
+    reload: Annotated[
+        bool,
+        typer.Option("--reload", help="开发时监视 Python 文件变更。"),
+    ] = False,
+    allow_network: Annotated[
+        bool,
+        typer.Option(
+            "--allow-network",
+            help="明确允许绑定非回环地址。",
+        ),
+    ] = False,
+) -> None:
+    """启动同源 Web 研究台和版本化 API。"""
+
+    if host not in {"127.0.0.1", "::1", "localhost"} and not allow_network:
+        typer.echo(
+            "拒绝监听非本机地址；如确有需要，请显式增加 --allow-network。"
+        )
+        raise typer.Exit(code=2)
+    try:
+        import uvicorn
+    except ImportError:
+        typer.echo('Web 依赖未安装；请执行 pip install "asharelens[server]"。')
+        raise typer.Exit(code=1) from None
+
+    typer.echo(f"AShareLens Web：http://{host}:{port}")
+    uvicorn.run(
+        "asharelens.server.app:app",
+        host=host,
+        port=port,
+        reload=reload,
+    )
+
+
 def _provider_registry() -> dict[str, DataProviderPlugin]:
     return {
         "baostock": BaoStockProvider(),
