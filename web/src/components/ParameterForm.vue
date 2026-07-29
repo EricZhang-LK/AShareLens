@@ -38,6 +38,12 @@ const errors = computed<ParameterErrors>(() => ({
   ...props.serverErrors,
 }));
 const valid = computed(() => Object.keys(errors.value).length === 0);
+const fieldNames = computed(() => new Set(properties.value.map(([name]) => name)));
+const generalErrors = computed(() =>
+  Object.entries(errors.value)
+    .filter(([name]) => !fieldNames.value.has(name))
+    .map(([, message]) => message),
+);
 
 function initialize(): void {
   values.value = normalizedInitialValues(props.schema, props.modelValue);
@@ -89,6 +95,9 @@ watch(() => props.schema, initialize, { immediate: true, deep: true });
       />
     </div>
     <div v-else class="empty-state">这个策略没有可配置参数。</div>
+    <div v-if="generalErrors.length" class="parameter-form__general-error" role="alert">
+      <span v-for="message in generalErrors" :key="message">{{ message }}</span>
+    </div>
 
     <div class="parameter-form__status" aria-live="polite">
       <span :class="{ valid }">
@@ -147,6 +156,17 @@ watch(() => props.schema, initialize, { immediate: true, deep: true });
   justify-content: space-between;
   padding-top: 16px;
   color: var(--cinnabar);
+  font-size: 10px;
+}
+
+.parameter-form__general-error {
+  display: grid;
+  gap: 5px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  color: var(--cinnabar-dark);
+  background: rgba(182, 61, 46, 0.07);
+  border-left: 2px solid var(--cinnabar);
   font-size: 10px;
 }
 
