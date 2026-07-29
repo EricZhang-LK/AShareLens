@@ -34,6 +34,7 @@ class PublishedDailyData(FrozenModel):
     """Published bars and the exact lineage used to produce them."""
 
     partition_id: str
+    partition_date: date
     provider_id: str
     source_batch_id: str
     content_hash: str
@@ -196,11 +197,39 @@ class DataRepository:
         )
         return PublishedDailyData(
             partition_id=partition.id,
+            partition_date=partition.partition_date,
             provider_id=partition.provider_id,
             source_batch_id=partition.source_batch_id,
             content_hash=partition.content_hash,
             bars=bars,
         )
+
+    def get_published_daily_range(
+        self,
+        dataset: Dataset,
+        start: date,
+        end: date,
+    ) -> tuple[PublishedDailyData, ...]:
+        """Load current daily partitions in chronological order."""
+
+        if start > end:
+            raise ValueError("start must not be later than end")
+        dates = tuple(
+            self.session.scalars(
+                select(PublishedPartitionRow.partition_date)
+                .where(
+                    PublishedPartitionRow.dataset == dataset.value,
+                    PublishedPartitionRow.partition_date >= start,
+                    PublishedPartitionRow.partition_date <= end,
+                )
+                .order_by(PublishedPartitionRow.partition_date)
+            )
+        )
+        published = (
+            self.get_published_daily_bars(dataset, partition_date)
+            for partition_date in dates
+        )
+        return tuple(item for item in published if item is not None)
 
 
 def _to_naive_utc(value: datetime) -> datetime:
