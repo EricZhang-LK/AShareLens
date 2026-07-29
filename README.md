@@ -22,10 +22,19 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m pytest
 ```
 
+## 离线演示
+
+演示命令使用三只确定性合成股票完成收盘选股、下一交易日开盘模拟成交、
+净值计算和运行指纹生成，不需要网络、账号或真实行情。
+
+```powershell
+.\.venv\Scripts\python.exe -m asharelens.cli demo
+.\.venv\Scripts\python.exe -m asharelens.cli demo --json
+```
+
 完整设计见
 [`docs/superpowers/specs/2026-07-29-asharelens-platform-design.md`](docs/superpowers/specs/2026-07-29-asharelens-platform-design.md)。
 
 ## 许可证与声明
 
 项目使用 [MIT License](LICENSE)。项目仅用于研究和软件开发，不构成任何投资建议。
-
