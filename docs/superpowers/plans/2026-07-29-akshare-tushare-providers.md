@@ -54,10 +54,10 @@
 - Create: `tests/data/providers/test_tushare.py`
 - Modify: `pyproject.toml`
 
-- [ ] Write failing tests for missing Token, secret redaction, listing history, calendar, single-day market query, date-range symbol query and unit conversion.
-- [ ] Implement lazy SDK Gateway and explicit permissions failures.
-- [ ] Add optional extra `tushare`; never place it in the default install.
-- [ ] Verify and commit `feat: add configurable tushare provider`.
+- [x] Write failing tests for missing Token, secret redaction, listing history, calendar, single-day market query, date-range symbol query and unit conversion.
+- [x] Implement lazy SDK Gateway and explicit permissions failures.
+- [x] Add optional extra `tushare`; never place it in the default install.
+- [x] Verify and commit `feat: add configurable tushare provider`.
 
 ### Task 4: Registry, routing documentation and phase audit
 
