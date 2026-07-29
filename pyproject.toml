@@ -51,7 +51,7 @@ asharelens = "asharelens.cli:app"
 packages = ["src/asharelens"]
 
 [tool.pytest.ini_options]
-addopts = "-ra"
+addopts = "-ra --basetemp=.pytest-tmp"
 pythonpath = ["src"]
 testpaths = ["tests"]
 
