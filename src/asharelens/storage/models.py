@@ -399,3 +399,29 @@ class SimulationFillRow(Base):
     commission: Mapped[Decimal] = mapped_column(DECIMAL(18, 4), nullable=False)
     transfer_fee: Mapped[Decimal] = mapped_column(DECIMAL(18, 4), nullable=False)
     stamp_duty: Mapped[Decimal] = mapped_column(DECIMAL(18, 4), nullable=False)
+
+
+class NotificationDeliveryRow(Base):
+    """Idempotent notification message and final delivery audit."""
+
+    __tablename__ = "notification_deliveries"
+    __table_args__ = (
+        UniqueConstraint(
+            "notifier_id",
+            "dedupe_key",
+            name="uq_notification_delivery_dedupe",
+        ),
+        Index("ix_notification_delivery_status", "status", "created_at"),
+        MYSQL_TABLE_OPTIONS,
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    notifier_id: Mapped[str] = mapped_column(String(128), nullable=False)
+    dedupe_key: Mapped[str] = mapped_column(String(160), nullable=False)
+    message: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False)
+    external_id: Mapped[str | None] = mapped_column(String(256), nullable=True)
+    last_error: Mapped[str | None] = mapped_column(String(2000), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(UTC_DATETIME, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(UTC_DATETIME, nullable=False)
+    delivered_at: Mapped[datetime | None] = mapped_column(UTC_DATETIME, nullable=True)
