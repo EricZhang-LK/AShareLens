@@ -105,11 +105,11 @@ TypeScript and Vite; official Vue Router and Vite release guidance.
 - Create: `web/src/lib/api.ts`
 - Create: `web/src/lib/types.ts`
 
-- [ ] Validate parameters through the API before running.
-- [ ] Render summary, SVG NAV chart, selected/excluded signals, reason codes,
+- [x] Validate parameters through the API before running.
+- [x] Render summary, SVG NAV chart, selected/excluded signals, reason codes,
   indicator evidence, costs, and run fingerprint.
-- [ ] Make demo-data labeling and investment-risk wording impossible to miss.
-- [ ] Test the API client and core interaction state; verify and commit.
+- [x] Make demo-data labeling and investment-risk wording impossible to miss.
+- [x] Test the API client and core interaction state; verify and commit.
 
 ### Task 6: Same-origin production serving and CLI
 

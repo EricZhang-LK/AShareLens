@@ -62,3 +62,72 @@ export interface ApiErrorDetail {
   request_id: string;
   details?: Record<string, unknown>;
 }
+
+export interface ParameterValidationResponse {
+  strategy_id: string;
+  parameters: Record<string, unknown>;
+}
+
+export interface DemoBacktestRequest {
+  strategy_id: string;
+  parameters: Record<string, unknown>;
+  sessions: number;
+  initial_cash: number;
+  top_n: number;
+  max_weight: number;
+}
+
+export interface SelectionReason {
+  code: string;
+  message: string;
+}
+
+export interface SelectionCandidate {
+  symbol: string;
+  signal_date: string;
+  selected: boolean;
+  score: number;
+  rank: number | null;
+  reasons: SelectionReason[];
+  metrics: Record<string, number>;
+  data_warnings: string[];
+}
+
+export interface NavPoint {
+  trade_date: string;
+  cash: number;
+  market_value: number;
+  total_value: number;
+}
+
+export interface BacktestSummary {
+  sessions: number;
+  initial_cash: number;
+  final_nav: number;
+  total_return_pct: number;
+  max_drawdown_pct: number;
+  selected_signals: number;
+  orders: number;
+  fills: number;
+}
+
+export interface BacktestCosts {
+  commission: number;
+  transfer_fee: number;
+  stamp_duty: number;
+  total: number;
+}
+
+export interface DemoBacktestResponse {
+  strategy_id: string;
+  strategy_version: string;
+  parameters: Record<string, unknown>;
+  is_demo: true;
+  data_source: "deterministic_synthetic";
+  warning: string;
+  fingerprint: string;
+  summary: BacktestSummary;
+  costs: BacktestCosts;
+  nav: NavPoint[];
+  latest_candidates: SelectionCandidate[];
+}
