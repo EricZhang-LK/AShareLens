@@ -36,7 +36,7 @@
 - Consumes: SQLAlchemy URL and engine options.
 - Produces: `Base`, `create_database_engine(url)`, `create_session_factory(engine)`, `IngestionBatchRow`, `DataPartitionRow`, `DailyBarRow`, and `PublishedPartitionRow`.
 
-- [ ] **Step 1: Add optional server dependencies**
+- [x] **Step 1: Add optional server dependencies**
 
 Add an extra containing:
 
@@ -50,7 +50,7 @@ server = [
 
 Add the same packages to the development extra so storage tests run in CI.
 
-- [ ] **Step 2: Write failing schema tests**
+- [x] **Step 2: Write failing schema tests**
 
 Tests must prove:
 
@@ -60,15 +60,15 @@ Tests must prove:
 - Required unique constraints exist.
 - `asharelens.core` imports no storage module.
 
-- [ ] **Step 3: Run and verify RED**
+- [x] **Step 3: Run and verify RED**
 
 Run: `python -m pytest tests/storage/test_schema.py -v`
 
-- [ ] **Step 4: Implement the engine and typed schema**
+- [x] **Step 4: Implement the engine and typed schema**
 
 Use SQLAlchemy `DeclarativeBase`, `Mapped`, and `mapped_column`. Store UUID-like IDs as lowercase 36-character strings for readable Alpha diagnostics. Use JSON columns for request and quality details, and `DateTime(timezone=False)` for UTC-normalized persistence.
 
-- [ ] **Step 5: Run full verification and commit**
+- [x] **Step 5: Run full verification and commit**
 
 ```text
 python -m pytest -q
@@ -91,19 +91,19 @@ git commit -m "feat: define mysql persistence schema"
 - Consumes: `ASHARELENS_DATABASE_URL` and ORM metadata.
 - Produces: upgrade from an empty database to revision `20260729_0001`, plus downgrade for disposable test databases.
 
-- [ ] **Step 1: Write failing migration tests**
+- [x] **Step 1: Write failing migration tests**
 
 Tests must create a temporary SQLite database, run Alembic upgrade to head, inspect the four required tables and constraints, run downgrade to base, and verify the tables are removed.
 
-- [ ] **Step 2: Run and verify RED**
+- [x] **Step 2: Run and verify RED**
 
 Run: `python -m pytest tests/storage/test_migration.py -v`
 
-- [ ] **Step 3: Implement configuration and migration**
+- [x] **Step 3: Implement configuration and migration**
 
 `migrations/env.py` must read `ASHARELENS_DATABASE_URL`, fall back to `sqlite:///./asharelens.db` only for local SDK development, import `Base.metadata`, and enable batch mode only for SQLite.
 
-- [ ] **Step 4: Verify migration and commit**
+- [x] **Step 4: Verify migration and commit**
 
 ```text
 python -m pytest tests/storage/test_migration.py -v
@@ -122,7 +122,7 @@ git commit -m "feat: add initial database migration"
 - Consumes: `DataBatch`, `DataPartition`, and `QualityReport`.
 - Produces: `DataRepository.record_batch(...)`, `publish_daily_partition(...)`, `get_published_daily_bars(...)`, and stable publication result IDs.
 
-- [ ] **Step 1: Write failing repository tests**
+- [x] **Step 1: Write failing repository tests**
 
 Tests must prove:
 
@@ -132,15 +132,15 @@ Tests must prove:
 - A failure-level quality report raises `UnpublishablePartition` and leaves the previous pointer unchanged.
 - Retrieved bars and lineage identify the exact Provider, source batch and content hash.
 
-- [ ] **Step 2: Run and verify RED**
+- [x] **Step 2: Run and verify RED**
 
 Run: `python -m pytest tests/storage/test_data_repository.py -v`
 
-- [ ] **Step 3: Implement transaction boundaries**
+- [x] **Step 3: Implement transaction boundaries**
 
 Repository methods accept a SQLAlchemy `Session` owned by the caller. They may flush but must not commit; service and Runner layers own commit or rollback. Normalize aware datetimes to naive UTC on write.
 
-- [ ] **Step 4: Run full verification and commit**
+- [x] **Step 4: Run full verification and commit**
 
 ```text
 python -m pytest -q
@@ -161,15 +161,15 @@ git commit -m "feat: publish data partitions transactionally"
 - Consumes: `ASHARELENS_TEST_DATABASE_URL`.
 - Produces: pytest marker `mysql` and CI job backed by `mysql:8.4`.
 
-- [ ] **Step 1: Write the opt-in integration test**
+- [x] **Step 1: Write the opt-in integration test**
 
 The test skips only when the environment variable is absent. When present it must run the migration, record and publish a partition twice, prove idempotency, query `information_schema` for InnoDB and utf8mb4, then downgrade the disposable schema.
 
-- [ ] **Step 2: Add the GitHub Actions MySQL service**
+- [x] **Step 2: Add the GitHub Actions MySQL service**
 
 Use `mysql:8.4`, a health command, a dedicated test database and non-root application user. Do not expose credentials in logs.
 
-- [ ] **Step 3: Verify locally available checks**
+- [x] **Step 3: Verify locally available checks**
 
 Run:
 
@@ -181,7 +181,7 @@ python -m mypy src
 
 Local MySQL execution is recorded as unavailable when Docker and local MySQL are absent; CI remains the authoritative MySQL runtime gate.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```text
 git add tests/integration/test_mysql_storage.py .github/workflows/ci.yml pyproject.toml
@@ -200,15 +200,15 @@ git commit -m "ci: verify persistence against mysql 8.4"
 - Consumes: a database URL from environment or option.
 - Produces: `asharelens database check` with sanitized dialect, migration revision and connection status.
 
-- [ ] **Step 1: Write failing CLI tests**
+- [x] **Step 1: Write failing CLI tests**
 
 Tests must prove a healthy SQLite test database reports the current revision, an unreachable MySQL URL returns code 1 without printing the password, and no stack trace is displayed by default.
 
-- [ ] **Step 2: Implement diagnostics and documentation**
+- [x] **Step 2: Implement diagnostics and documentation**
 
 Document MySQL 8.4 requirements, UTC storage, migration commands, backup-before-upgrade policy and the fact that SQLite is a test/SDK convenience rather than a supported server database.
 
-- [ ] **Step 3: Run phase verification**
+- [x] **Step 3: Run phase verification**
 
 ```text
 python -m pytest --cov=asharelens --cov-report=term-missing
@@ -218,10 +218,18 @@ python -m build --no-isolation
 python -m asharelens.cli demo --json
 ```
 
-- [ ] **Step 4: Record evidence and commit**
+- [x] **Step 4: Record evidence and commit**
 
 ```text
 git add src/asharelens/cli.py tests/test_database_cli.py README.md docs/superpowers/plans/2026-07-29-mysql-persistence.md
 git commit -m "docs: record mysql persistence verification"
 ```
 
+## Verification Evidence
+
+- 2026-07-29：`pytest --cov=asharelens` 收集 74 项，73 项通过，1 项 MySQL 集成测试因本机未配置 `ASHARELENS_TEST_DATABASE_URL` 而跳过；总覆盖率 91%。
+- `ruff check .` 通过。
+- `mypy src` 严格类型检查通过，共检查 25 个源文件。
+- `python -m build --no-isolation` 成功生成源码包和 wheel。
+- 离线演示闭环成功，运行指纹为 `93ce3f0e674a18620425a677b72c275f2a66e6aa1d4c5bba75275347eb8d4fd7`。
+- 本机没有 Docker 或本地 MySQL 服务，因此尚未声称完成真实 MySQL 运行时验证；`mysql:8.4` GitHub Actions 作业是合并前的权威门禁。

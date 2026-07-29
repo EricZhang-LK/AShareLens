@@ -3,16 +3,21 @@
 from __future__ import annotations
 
 import json
+import os
 from datetime import date
 from typing import Annotated
 
 import typer
+from alembic.migration import MigrationContext
+from sqlalchemy.engine import make_url
+from sqlalchemy.exc import ArgumentError, SQLAlchemyError
 
 from asharelens.core.engine import DailyCycleEngine
 from asharelens.core.execution import OpeningExecutionModel
 from asharelens.data.provider import DataProviderPlugin
 from asharelens.data.providers.baostock import BaoStockProvider
 from asharelens.demo.data import generate_demo_bars
+from asharelens.storage.database import create_database_engine
 from asharelens.strategies.moving_average import (
     MovingAverageParams,
     MovingAverageStrategy,
@@ -25,6 +30,8 @@ app = typer.Typer(
 )
 provider_app = typer.Typer(help="查看和诊断市场数据源。")
 app.add_typer(provider_app, name="provider")
+database_app = typer.Typer(help="检查持久化数据库和迁移版本。")
+app.add_typer(database_app, name="database")
 
 
 @app.callback()
@@ -64,6 +71,40 @@ def provider_check(provider_id: str) -> None:
     typer.echo(f"{provider_id} | {status} | {latency} | {health.message}")
     if not health.ok:
         raise typer.Exit(code=1)
+
+
+@database_app.command("check")
+def database_check(
+    url: Annotated[
+        str | None,
+        typer.Option("--url", help="覆盖 ASHARELENS_DATABASE_URL。"),
+    ] = None,
+) -> None:
+    """检查连接并输出脱敏 URL 和当前 Alembic revision。"""
+
+    database_url = (
+        url
+        or os.getenv("ASHARELENS_DATABASE_URL")
+        or "sqlite+pysqlite:///./asharelens.db"
+    )
+    try:
+        parsed = make_url(database_url)
+    except (ArgumentError, ValueError):
+        typer.echo("数据库 URL 无效。")
+        raise typer.Exit(code=1) from None
+    sanitized = parsed.render_as_string(hide_password=True)
+
+    try:
+        engine = create_database_engine(database_url)
+        with engine.connect() as connection:
+            revision = MigrationContext.configure(connection).get_current_revision()
+        engine.dispose()
+    except (SQLAlchemyError, OSError):
+        typer.echo(f"{sanitized} | 连接失败")
+        raise typer.Exit(code=1) from None
+
+    revision_label = revision or "未迁移"
+    typer.echo(f"{sanitized} | {parsed.get_backend_name()} | 正常 | {revision_label}")
 
 
 @app.command()
