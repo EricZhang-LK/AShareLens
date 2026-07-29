@@ -42,10 +42,10 @@
 - Create: `tests/data/providers/test_akshare.py`
 - Modify: `pyproject.toml`
 
-- [ ] Write failing Gateway contract tests for lazy dependency errors, health, current instruments, synthesized closed calendar days, daily normalization and all adjustment modes.
-- [ ] Implement current-only instrument guard and unit conversion (`手 × 100`).
-- [ ] Add optional extra `akshare`; do not add it to mandatory SDK dependencies.
-- [ ] Verify and commit `feat: add akshare supplement provider`.
+- [x] Write failing Gateway contract tests for lazy dependency errors, health, current instruments, synthesized closed calendar days, daily normalization and all adjustment modes.
+- [x] Implement current-only instrument guard and unit conversion (`手 × 100`).
+- [x] Add optional extra `akshare`; do not add it to mandatory SDK dependencies.
+- [x] Verify and commit `feat: add akshare supplement provider`.
 
 ### Task 3: Tushare configurable Provider
 
