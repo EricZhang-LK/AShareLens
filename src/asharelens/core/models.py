@@ -58,14 +58,50 @@ class SelectionCandidate(FrozenModel):
     data_warnings: tuple[str, ...] = ()
 
 
+class FundamentalMetric(FrozenModel):
+    """One immutable, named point-in-time fundamental value."""
+
+    name: str = Field(min_length=1)
+    value: float
+
+
+class FundamentalSnapshot(FrozenModel):
+    """Financial and valuation values visible from one publication date."""
+
+    symbol: str = Field(min_length=1)
+    period_end: date
+    available_on: date
+    metrics: tuple[FundamentalMetric, ...]
+
+    @model_validator(mode="after")
+    def validate_snapshot(self) -> FundamentalSnapshot:
+        if self.available_on < self.period_end:
+            raise ValueError("available_on must not precede period_end")
+        names = [metric.name for metric in self.metrics]
+        if len(names) != len(set(names)):
+            raise ValueError("metric names must be unique")
+        return self
+
+    def metric(self, name: str) -> float | None:
+        """Return one metric without exposing mutable state."""
+
+        return next(
+            (metric.value for metric in self.metrics if metric.name == name),
+            None,
+        )
+
+
 class StrategyContext(FrozenModel):
     """Point-in-time data visible to a strategy for one close signal."""
 
     signal_date: date
     bars: dict[str, tuple[DailyBar, ...]]
+    fundamentals: dict[str, tuple[FundamentalSnapshot, ...]] = Field(
+        default_factory=dict
+    )
 
     @model_validator(mode="after")
-    def reject_future_or_mismatched_bars(self) -> StrategyContext:
+    def reject_future_or_mismatched_data(self) -> StrategyContext:
         for symbol, observations in self.bars.items():
             for bar in observations:
                 if bar.symbol != symbol:
@@ -74,4 +110,26 @@ class StrategyContext(FrozenModel):
                     raise ValueError(
                         f"bar date {bar.trade_date} is later than signal_date {self.signal_date}"
                     )
+        for symbol, snapshots in self.fundamentals.items():
+            for snapshot in snapshots:
+                if snapshot.symbol != symbol:
+                    raise ValueError(
+                        f"fundamental symbol {snapshot.symbol} does not match key {symbol}"
+                    )
+                if snapshot.available_on > self.signal_date:
+                    raise ValueError(
+                        f"fundamental available_on {snapshot.available_on} "
+                        f"is later than signal_date {self.signal_date}"
+                    )
         return self
+
+    def latest_fundamental(self, symbol: str) -> FundamentalSnapshot | None:
+        """Return the latest publication visible in this context."""
+
+        snapshots = self.fundamentals.get(symbol, ())
+        if not snapshots:
+            return None
+        return max(
+            snapshots,
+            key=lambda snapshot: (snapshot.available_on, snapshot.period_end),
+        )

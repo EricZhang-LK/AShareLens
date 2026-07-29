@@ -26,9 +26,9 @@
 - Modify: `src/asharelens/core/models.py`
 - Create: `tests/core/test_fundamental_context.py`
 
-- [ ] Write failing tests for future-publication rejection, symbol mismatch, latest-visible lookup and immutable metrics.
-- [ ] Add `FundamentalSnapshot` and optional fundamentals to `StrategyContext`.
-- [ ] Verify Core remains independent of data/storage modules and commit.
+- [x] Write failing tests for future-publication rejection, symbol mismatch, latest-visible lookup and immutable metrics.
+- [x] Add `FundamentalSnapshot` and optional fundamentals to `StrategyContext`.
+- [x] Verify Core remains independent of data/storage modules and commit.
 
 ### Task 2: Cross-sectional momentum/RPS strategy
 
