@@ -31,9 +31,9 @@
 - Modify: `src/asharelens/data/providers/baostock.py`
 - Create: `tests/data/providers/test_common.py`
 
-- [ ] Write failing tests for沪深京代码映射、非法代码拒绝、规范哈希和批次 ID。
-- [ ] Extract reusable symbol and canonical-hash logic without changing BaoStock output.
-- [ ] Run BaoStock regression tests and commit.
+- [x] Write failing tests for沪深京代码映射、非法代码拒绝、规范哈希和批次 ID。
+- [x] Extract reusable symbol and canonical-hash logic without changing BaoStock output.
+- [x] Run BaoStock regression tests and commit.
 
 ### Task 2: AkShare zero-registration supplement
 

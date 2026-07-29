@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-import hashlib
 import importlib
-import json
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from datetime import UTC, date, datetime
@@ -25,6 +23,7 @@ from asharelens.data.provider import (
     ProviderHealth,
     ProviderMetadata,
 )
+from asharelens.data.providers.common import canonical_hash, is_a_share_symbol
 
 DAILY_FIELDS = "date,code,open,high,low,close,volume,amount,tradestatus,isST"
 ADJUSTMENT_FLAGS = {
@@ -178,7 +177,7 @@ class BaoStockProvider:
                 is_active=row["tradeStatus"] == "1",
             )
             for row in rows
-            if _is_a_share_code(row.get("code", "").lower())
+            if is_a_share_symbol(row.get("code", "").lower())
             and row.get("code_name", "").strip()
         )
         return self._batch(Dataset.INSTRUMENTS, request, rows, records)
@@ -302,7 +301,7 @@ class BaoStockProvider:
         raw_rows: list[dict[str, str]],
         records: tuple[RecordT, ...],
     ) -> DataBatch[RecordT]:
-        content_hash = _canonical_hash(
+        content_hash = canonical_hash(
             {
                 "dataset": dataset,
                 "request": request,
@@ -319,26 +318,3 @@ class BaoStockProvider:
             content_hash=content_hash,
             records=records,
         )
-
-
-def _is_a_share_code(symbol: str) -> bool:
-    if len(symbol) != 9 or symbol[2] != "." or not symbol[3:].isdigit():
-        return False
-    code = symbol[3:]
-    if symbol.startswith("sh."):
-        return code.startswith(("600", "601", "603", "605", "688", "689"))
-    if symbol.startswith("sz."):
-        return code.startswith(("000", "001", "002", "003", "300", "301"))
-    if symbol.startswith("bj."):
-        return code.startswith(("4", "8", "9"))
-    return False
-
-
-def _canonical_hash(value: object) -> str:
-    canonical = json.dumps(
-        value,
-        ensure_ascii=False,
-        sort_keys=True,
-        separators=(",", ":"),
-    )
-    return hashlib.sha256(canonical.encode()).hexdigest()
