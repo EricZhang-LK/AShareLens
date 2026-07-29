@@ -33,6 +33,11 @@ akshare = [
 tushare = [
   "tushare>=1.4,<2",
 ]
+data = [
+  "akshare>=1.18.81,<2",
+  "baostock>=0.9.3,<1",
+  "tushare>=1.4,<2",
+]
 server = [
   "alembic>=1.14,<2",
   "pymysql>=1.1,<2",
@@ -83,5 +88,6 @@ branch = true
 source = ["asharelens"]
 
 [tool.coverage.report]
+fail_under = 85
 show_missing = true
 skip_covered = true

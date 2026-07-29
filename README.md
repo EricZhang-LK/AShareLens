@@ -33,19 +33,33 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m asharelens.cli demo --json
 ```
 
-## 免费真实数据
+## 真实数据源
 
-BaoStock 是默认真实数据源，匿名登录、不要求用户申请 Token。它作为可选依赖安装，
-基础 SDK 和离线演示不会被数据源 SDK 绑定。
+默认路由顺序为 BaoStock → AkShare → Tushare，用户可以调整。路由以完整数据分区为
+单位切换，绝不把不同来源的股票行拼成一个“看似完整”的分区。
+
+- BaoStock：默认源，匿名登录，覆盖沪深基础数据。
+- AkShare：免注册补充源，重点补充北交所；当前股票列表不能用于历史时点股票池。
+- Tushare：用户可选配置 Token，提供可追溯的历史上市/退市信息；接口权限和积分以
+  Tushare 官方规则为准。
 
 ```powershell
-.\.venv\Scripts\python.exe -m pip install -e ".[baostock,dev]"
+.\.venv\Scripts\python.exe -m pip install -e ".[baostock,akshare,dev]"
 .\.venv\Scripts\python.exe -m asharelens.cli provider list
 .\.venv\Scripts\python.exe -m asharelens.cli provider check baostock
+.\.venv\Scripts\python.exe -m asharelens.cli provider check akshare
+
+# 可选：安装全部数据源并配置 Tushare
+.\.venv\Scripts\python.exe -m pip install -e ".[data,dev]"
+$env:TUSHARE_TOKEN = "你的 Token"
+.\.venv\Scripts\python.exe -m asharelens.cli provider check tushare
 ```
 
-当前 BaoStock Provider 提供沪深股票列表、交易日历和日线行情。北交所数据将由
-AkShare 补充 Provider 覆盖。外部数据的可用性、许可和使用限制以数据提供方说明为准。
+三家 Provider 都把成交量规范为股、成交额规范为人民币元；原始接口单位与换算规则
+会进入批次请求证据。AkShare 与 Tushare SDK 均为可选依赖，不影响基础 SDK 和离线
+演示。外部数据的可用性、许可和使用限制以
+[AKShare 文档](https://akshare.akfamily.xyz/)与
+[Tushare 文档](https://tushare.pro/document/2)为准。
 
 ## MySQL 持久化
 

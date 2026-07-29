@@ -17,7 +17,9 @@ from sqlalchemy.exc import ArgumentError, SQLAlchemyError
 from asharelens.core.engine import DailyCycleEngine
 from asharelens.core.execution import OpeningExecutionModel
 from asharelens.data.provider import DataProviderPlugin
+from asharelens.data.providers.akshare import AkShareProvider
 from asharelens.data.providers.baostock import BaoStockProvider
+from asharelens.data.providers.tushare import TushareProvider
 from asharelens.demo.data import generate_demo_bars
 from asharelens.runner.executor import ExecutorRegistry
 from asharelens.runner.models import JobStatus
@@ -53,19 +55,28 @@ def main() -> None:
 
 
 def _provider_registry() -> dict[str, DataProviderPlugin]:
-    return {"baostock": BaoStockProvider()}
+    return {
+        "baostock": BaoStockProvider(),
+        "akshare": AkShareProvider(),
+        "tushare": TushareProvider(),
+    }
 
 
 @provider_app.command("list")
 def provider_list() -> None:
     """列出内置 Provider，不连接外部服务。"""
 
-    for provider_id, provider in sorted(_provider_registry().items()):
+    labels = {
+        "baostock": "默认",
+        "akshare": "补充",
+        "tushare": "可选",
+    }
+    for provider_id, provider in _provider_registry().items():
         registration = "需要注册" if provider.metadata.requires_registration else "免注册"
-        default_label = "默认" if provider_id == "baostock" else "备用"
+        default_label = labels.get(provider_id, "备用")
         typer.echo(
             f"{provider_id} | {default_label} | {registration} | "
-            '可选安装：pip install "asharelens[baostock]"'
+            f'可选安装：pip install "asharelens[{provider_id}]"'
         )
 
 
