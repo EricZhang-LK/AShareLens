@@ -46,9 +46,9 @@
 - Create: `src/asharelens/strategies/value_quality.py`
 - Create: `tests/strategies/test_value_quality.py`
 
-- [ ] Test configurable PE/PB/ROE/growth/debt thresholds, missing metrics, future snapshots and deterministic score/rank.
-- [ ] Implement multi-factor score from point-in-time fundamentals only.
-- [ ] Verify and commit `feat: add point in time value quality strategy`.
+- [x] Test configurable PE/PB/ROE/growth/debt thresholds, missing metrics, future snapshots and deterministic score/rank.
+- [x] Implement multi-factor score from point-in-time fundamentals only.
+- [x] Verify and commit `feat: add point in time value quality strategy`.
 
 ### Task 4: Uptrend pullback and built-in registry
 
