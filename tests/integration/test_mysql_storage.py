@@ -1,5 +1,5 @@
 import os
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 
 import pytest
@@ -11,6 +11,7 @@ from asharelens.core.models import DailyBar
 from asharelens.data.models import DataBatch, Dataset
 from asharelens.data.partition import partition_daily_bars
 from asharelens.data.quality import QualityReport
+from asharelens.runner.job_repository import JobRepository
 from asharelens.storage.data_repository import DataRepository
 from asharelens.storage.database import (
     create_database_engine,
@@ -79,3 +80,48 @@ def test_mysql_84_migration_and_idempotent_publication() -> None:
     finally:
         command.downgrade(config, "base")
 
+
+def test_mysql_skip_locked_prevents_duplicate_concurrent_claim() -> None:
+    database_url = os.getenv("ASHARELENS_TEST_DATABASE_URL")
+    if database_url is None:
+        pytest.skip("ASHARELENS_TEST_DATABASE_URL is not configured")
+
+    config = Config(str(Path(__file__).parents[2] / "alembic.ini"))
+    command.downgrade(config, "base")
+    engine = create_database_engine(database_url)
+    factory = create_session_factory(engine)
+    now = datetime(2026, 7, 29, 8)
+    first_session = factory()
+    second_session = factory()
+    try:
+        command.upgrade(config, "head")
+        with factory.begin() as enqueue_session:
+            JobRepository(enqueue_session).enqueue(
+                job_type="mysql_claim_probe",
+                idempotency_key="one-job",
+                payload={},
+                now=now,
+            )
+
+        first = JobRepository(first_session).claim(
+            queue="default",
+            worker_id="worker-a",
+            now=now,
+            lease_for=timedelta(seconds=30),
+        )
+        second = JobRepository(second_session).claim(
+            queue="default",
+            worker_id="worker-b",
+            now=now,
+            lease_for=timedelta(seconds=30),
+        )
+
+        assert first is not None
+        assert second is None
+    finally:
+        first_session.rollback()
+        second_session.rollback()
+        first_session.close()
+        second_session.close()
+        engine.dispose()
+        command.downgrade(config, "base")

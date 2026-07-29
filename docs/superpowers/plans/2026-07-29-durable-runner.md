@@ -65,23 +65,23 @@ Commit: `feat: add durable runner job schema`
 - Create: `src/asharelens/runner/job_repository.py`
 - Create: `tests/runner/test_job_repository.py`
 
-- [ ] **Step 1: Write failing repository tests**
+- [x] **Step 1: Write failing repository tests**
 
 Prove idempotent enqueue, deterministic priority ordering, claim ownership, heartbeat, completion, retry backoff, terminal failure and expired-lease recovery.
 
-- [ ] **Step 2: Verify RED**
+- [x] **Step 2: Verify RED**
 
 Run: `python -m pytest tests/runner/test_job_repository.py -v`
 
-- [ ] **Step 3: Implement repository-owned state transitions**
+- [x] **Step 3: Implement repository-owned state transitions**
 
 Repository methods may flush but never commit. The caller owns transaction commit/rollback.
 
-- [ ] **Step 4: Add opt-in MySQL concurrent-claim coverage**
+- [x] **Step 4: Add opt-in MySQL concurrent-claim coverage**
 
 Two independent sessions must never claim the same job. This test joins the existing `mysql` CI gate.
 
-- [ ] **Step 5: Verify and commit**
+- [x] **Step 5: Verify and commit**
 
 Commit: `feat: implement lease based task broker`
 
