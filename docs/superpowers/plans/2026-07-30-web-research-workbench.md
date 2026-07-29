@@ -130,8 +130,22 @@ TypeScript and Vite; official Vue Router and Vite release guidance.
 
 ### Task 7: Phase audit
 
-- [ ] Run Python tests with coverage, Ruff, mypy and package build.
-- [ ] Run frontend unit tests, TypeScript checking and production build.
-- [ ] Record versions and evidence without claiming real MySQL validation when
+- [x] Run Python tests with coverage, Ruff, mypy and package build.
+- [x] Run frontend unit tests, TypeScript checking and production build.
+- [x] Record versions and evidence without claiming real MySQL validation when
   no disposable MySQL URL is configured.
-- [ ] Update README status and commit `docs: verify web research workbench`.
+- [x] Update README status and commit `docs: verify web research workbench`.
+
+Evidence on 2026-07-30:
+
+- Python: 180 passed; 2 real-MySQL integration tests skipped because
+  `ASHARELENS_TEST_DATABASE_URL` is not configured; branch coverage 88.40%.
+- Ruff passed; strict mypy passed across 59 source files; sdist and wheel built
+  successfully with the installed build backend.
+- Frontend: 6 Vitest tests passed; `vue-tsc --noEmit` passed; Vite production
+  build passed (main JS 122.11 kB, 46.68 kB gzip).
+- Locked runtime versions include Vue 3.5.40, Vue Router 5.2.0, Vite 8.1.5,
+  TypeScript 6.0.3 and Vitest 4.1.10.
+- Live browser QA passed on the desktop viewport and a temporary 390×844 mobile
+  viewport: homepage, schema form, real demo run, NAV chart, signal evidence and
+  responsive navigation rendered without browser console errors.
