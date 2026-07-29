@@ -39,7 +39,7 @@
 - Consumes: none.
 - Produces: importable `asharelens.__version__` and standard commands `pytest`, `ruff check .`, and `mypy src`.
 
-- [ ] **Step 1: Write the failing package import test**
+- [x] **Step 1: Write the failing package import test**
 
 ```python
 from asharelens import __version__
@@ -50,17 +50,17 @@ def test_package_exposes_semantic_version() -> None:
     assert (major, minor, patch) == ("0", "1", "0")
 ```
 
-- [ ] **Step 2: Run the test and verify RED**
+- [x] **Step 2: Run the test and verify RED**
 
 Run: `python -m pytest tests/test_package.py -v`
 
 Expected: FAIL because `asharelens` does not exist.
 
-- [ ] **Step 3: Add the minimal package and project configuration**
+- [x] **Step 3: Add the minimal package and project configuration**
 
 Create a Hatchling-based `pyproject.toml` with runtime dependencies `pydantic>=2.8,<3` and `typer>=0.12,<1`, and development dependencies `pytest>=8,<9`, `pytest-cov>=5,<7`, `ruff>=0.6,<1`, and `mypy>=1.11,<2`. Set `__version__ = "0.1.0"` and configure the `asharelens` CLI entry point.
 
-- [ ] **Step 4: Run baseline verification**
+- [x] **Step 4: Run baseline verification**
 
 Run:
 
@@ -72,7 +72,7 @@ python -m mypy src
 
 Expected: all commands exit with code 0.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```text
 git add .
@@ -91,7 +91,7 @@ git commit -m "chore: initialize asharelens package"
 - Consumes: Pydantic 2.
 - Produces: `DailyBar`, `StrategyContext`, `SelectionReason`, `SelectionCandidate`, `StrategyMetadata`, and generic `StrategyPlugin[ParamsT]`.
 
-- [ ] **Step 1: Write failing tests for validation and JSON Schema**
+- [x] **Step 1: Write failing tests for validation and JSON Schema**
 
 ```python
 from datetime import date
@@ -136,17 +136,17 @@ def test_strategy_metadata_schema_is_machine_readable() -> None:
     assert schema["properties"]["plugin_api_version"]["type"] == "string"
 ```
 
-- [ ] **Step 2: Run and verify RED**
+- [x] **Step 2: Run and verify RED**
 
 Run: `python -m pytest tests/core/test_strategy_contract.py -v`
 
 Expected: FAIL because the model and strategy modules do not exist.
 
-- [ ] **Step 3: Implement immutable contracts**
+- [x] **Step 3: Implement immutable contracts**
 
 Use frozen Pydantic models. Validate `low <= min(open, close)`, `high >= max(open, close)`, non-negative volume and amount, scores in `[0, 1]`, and positive ranks. Define `StrategyPlugin.generate(context, params) -> tuple[SelectionCandidate, ...]` as the public protocol.
 
-- [ ] **Step 4: Run focused and full tests**
+- [x] **Step 4: Run focused and full tests**
 
 Run:
 
@@ -157,7 +157,7 @@ python -m pytest -q
 
 Expected: all tests pass.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```text
 git add src/asharelens/core tests/core
@@ -175,7 +175,7 @@ git commit -m "feat: define explainable strategy contracts"
 - Consumes: `DailyBar`.
 - Produces: `generate_demo_bars(start: date, sessions: int) -> dict[str, tuple[DailyBar, ...]]`.
 
-- [ ] **Step 1: Write failing deterministic-data tests**
+- [x] **Step 1: Write failing deterministic-data tests**
 
 ```python
 from datetime import date
@@ -197,17 +197,17 @@ def test_demo_data_contains_distinct_market_behaviors() -> None:
     assert bars["demo.000002"][-1].close < bars["demo.000002"][0].close
 ```
 
-- [ ] **Step 2: Run and verify RED**
+- [x] **Step 2: Run and verify RED**
 
 Run: `python -m pytest tests/demo/test_synthetic_data.py -v`
 
 Expected: FAIL because `asharelens.demo` does not exist.
 
-- [ ] **Step 3: Implement deterministic weekday bars**
+- [x] **Step 3: Implement deterministic weekday bars**
 
 Generate exactly three symbols with rising, falling, and oscillating price paths. Skip weekends, derive OHLC and volume using fixed arithmetic only, round prices to two decimals, and avoid random-number generators.
 
-- [ ] **Step 4: Run focused and full tests**
+- [x] **Step 4: Run focused and full tests**
 
 Run:
 
@@ -218,7 +218,7 @@ python -m pytest -q
 
 Expected: all tests pass.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```text
 git add src/asharelens/demo tests/demo
@@ -236,7 +236,7 @@ git commit -m "feat: add deterministic demo market data"
 - Consumes: `StrategyContext`, `SelectionCandidate`, and demo bars.
 - Produces: `MovingAverageParams` and `MovingAverageStrategy`.
 
-- [ ] **Step 1: Write failing strategy tests**
+- [x] **Step 1: Write failing strategy tests**
 
 ```python
 from datetime import date
@@ -269,17 +269,17 @@ def test_moving_average_selects_rising_symbol_with_explanation() -> None:
     assert falling.selected is False
 ```
 
-- [ ] **Step 2: Run and verify RED**
+- [x] **Step 2: Run and verify RED**
 
 Run: `python -m pytest tests/strategies/test_moving_average.py -v`
 
 Expected: FAIL because the moving-average strategy does not exist.
 
-- [ ] **Step 3: Implement the minimum strategy**
+- [x] **Step 3: Implement the minimum strategy**
 
 Validate `fast_period < slow_period`. Use only bars whose date is not later than `context.signal_date`. Select a symbol when the fast average is strictly above the slow average for all confirmation dates. Return metrics for both averages and a reason code for either selection or exclusion.
 
-- [ ] **Step 4: Run focused and full tests**
+- [x] **Step 4: Run focused and full tests**
 
 Run:
 
@@ -290,7 +290,7 @@ python -m pytest -q
 
 Expected: all tests pass.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```text
 git add src/asharelens/strategies tests/strategies
@@ -309,7 +309,7 @@ git commit -m "feat: add parameterized moving average strategy"
 - Consumes: ranked `SelectionCandidate` values and `DailyBar`.
 - Produces: `build_equal_weight_targets(...)`, `Order`, `Fill`, `PortfolioState`, and `OpeningExecutionModel.execute(...)`.
 
-- [ ] **Step 1: Write failing equal-weight tests**
+- [x] **Step 1: Write failing equal-weight tests**
 
 ```python
 from datetime import date
@@ -327,13 +327,13 @@ def test_equal_weight_targets_respect_top_n() -> None:
     assert targets == {"demo.0": 0.5, "demo.1": 0.5}
 ```
 
-- [ ] **Step 2: Run and verify portfolio RED**
+- [x] **Step 2: Run and verify portfolio RED**
 
 Run: `python -m pytest tests/core/test_portfolio.py -v`
 
 Expected: FAIL because the portfolio module does not exist.
 
-- [ ] **Step 3: Implement equal-weight targets and verify GREEN**
+- [x] **Step 3: Implement equal-weight targets and verify GREEN**
 
 Sort selected candidates by rank and symbol, take `top_n`, allocate equal weights, and reject configurations where `top_n * max_weight < 1`.
 
@@ -341,7 +341,7 @@ Run: `python -m pytest tests/core/test_portfolio.py -v`
 
 Expected: PASS.
 
-- [ ] **Step 4: Write failing D+1 execution tests**
+- [x] **Step 4: Write failing D+1 execution tests**
 
 ```python
 from datetime import date
@@ -367,13 +367,13 @@ def test_buy_fills_at_adverse_slipped_next_open_and_board_lot() -> None:
     assert fill.price == 10.01
 ```
 
-- [ ] **Step 5: Run and verify execution RED**
+- [x] **Step 5: Run and verify execution RED**
 
 Run: `python -m pytest tests/core/test_execution.py -v`
 
 Expected: FAIL because the execution module does not exist.
 
-- [ ] **Step 6: Implement minimum opening execution and verify all tests**
+- [x] **Step 6: Implement minimum opening execution and verify all tests**
 
 Apply adverse basis-point slippage, two-decimal adverse tick rounding, high/low clamping, 100-share buy-lot rounding, commission, and explicit rejection for a missing next-day bar.
 
@@ -386,7 +386,7 @@ python -m pytest -q
 
 Expected: all tests pass.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```text
 git add src/asharelens/core tests/core
@@ -405,7 +405,7 @@ git commit -m "feat: add target portfolio and opening execution"
 - Consumes: strategy, parameters, bars, target builder, and opening execution model.
 - Produces: `build_run_fingerprint(...)`, `DailyCycleEngine`, `BacktestResult`, signal ledger, fill ledger, and NAV series.
 
-- [ ] **Step 1: Write failing fingerprint test**
+- [x] **Step 1: Write failing fingerprint test**
 
 ```python
 from asharelens.core.fingerprint import build_run_fingerprint
@@ -418,31 +418,31 @@ def test_fingerprint_is_canonical_for_parameter_key_order() -> None:
     assert len(first) == 64
 ```
 
-- [ ] **Step 2: Run and verify fingerprint RED**
+- [x] **Step 2: Run and verify fingerprint RED**
 
 Run: `python -m pytest tests/core/test_fingerprint.py -v`
 
 Expected: FAIL because the fingerprint module does not exist.
 
-- [ ] **Step 3: Implement canonical SHA-256 fingerprint**
+- [x] **Step 3: Implement canonical SHA-256 fingerprint**
 
 Serialize UTF-8 JSON with sorted keys and compact separators, include all arguments in a named object, and return lowercase hexadecimal SHA-256.
 
-- [ ] **Step 4: Write failing end-to-end engine test**
+- [x] **Step 4: Write failing end-to-end engine test**
 
 Create a test using 80 synthetic sessions, the moving-average strategy, `100_000` initial cash, `top_n=1`, and zero fees. Assert that no fill occurs on a signal date, every fill date is later than its order signal date, cash never becomes negative, and final NAV is positive.
 
-- [ ] **Step 5: Run and verify engine RED**
+- [x] **Step 5: Run and verify engine RED**
 
 Run: `python -m pytest tests/core/test_engine.py -v`
 
 Expected: FAIL because `DailyCycleEngine` does not exist.
 
-- [ ] **Step 6: Implement the minimum chronological engine**
+- [x] **Step 6: Implement the minimum chronological engine**
 
 The engine must process prior pending orders before generating the current close signal, value positions at close, create next-session orders, and return immutable ledgers. Reuse the same public `process_session` method that the future paper portfolio runner will call.
 
-- [ ] **Step 7: Run focused and full tests**
+- [x] **Step 7: Run focused and full tests**
 
 Run:
 
@@ -453,7 +453,7 @@ python -m pytest -q
 
 Expected: all tests pass.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```text
 git add src/asharelens/core tests/core
@@ -471,7 +471,7 @@ git commit -m "feat: add shared daily cycle backtest engine"
 - Consumes: demo data, moving-average strategy, and daily-cycle engine.
 - Produces: `asharelens demo` command with human-readable summary and `--json` machine-readable output.
 
-- [ ] **Step 1: Write failing CLI behavior test**
+- [x] **Step 1: Write failing CLI behavior test**
 
 ```python
 import json
@@ -492,17 +492,17 @@ def test_demo_json_reports_reproducible_closed_loop() -> None:
     assert len(payload["fingerprint"]) == 64
 ```
 
-- [ ] **Step 2: Run and verify RED**
+- [x] **Step 2: Run and verify RED**
 
 Run: `python -m pytest tests/test_cli.py -v`
 
 Expected: FAIL because the CLI module does not exist.
 
-- [ ] **Step 3: Implement the demo command**
+- [x] **Step 3: Implement the demo command**
 
 Use fixed dates, fixed parameters, fixed starting cash, deterministic data, and stable JSON keys. Human output must state that the data is synthetic and the result is not investment advice.
 
-- [ ] **Step 4: Run automated and manual verification**
+- [x] **Step 4: Run automated and manual verification**
 
 Run:
 
@@ -515,7 +515,7 @@ python -m mypy src
 
 Expected: tests and static checks pass; CLI prints valid JSON with non-zero signals and fills.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```text
 git add src/asharelens/cli.py tests/test_cli.py README.md
@@ -531,7 +531,7 @@ git commit -m "feat: deliver deterministic demo selection loop"
 - Consumes: all Task 1–7 outputs.
 - Produces: checked task boxes and authoritative verification evidence.
 
-- [ ] **Step 1: Run the complete verification suite**
+- [x] **Step 1: Run the complete verification suite**
 
 Run:
 
@@ -546,14 +546,26 @@ git status --short
 
 Expected: all commands succeed; demo JSON is deterministic across two consecutive runs; only the plan checkbox update remains uncommitted.
 
-- [ ] **Step 2: Verify architectural constraints**
+- [x] **Step 2: Verify architectural constraints**
 
 Run a repository search confirming that files under `src/asharelens/core` do not import `fastapi`, `sqlalchemy`, `redis`, `celery`, `baostock`, `akshare`, or `tushare`.
 
-- [ ] **Step 3: Mark completed boxes and commit the audit**
+- [x] **Step 3: Mark completed boxes and commit the audit**
 
 ```text
 git add docs/superpowers/plans/2026-07-29-foundation-demo-core.md
 git commit -m "docs: record foundation phase verification"
 ```
 
+## Verification Evidence
+
+- `pytest --cov=asharelens`: 31 passed，语句与分支综合覆盖率 91%。
+- `ruff check .`: 通过。
+- `mypy src`: 严格模式通过。
+- `python -m build --no-isolation`: 成功生成源码包和 wheel。
+- `python -m asharelens.cli demo --json`: 连续两次输出完全相同。
+- 演示输出：80 个交易日、76 条入选信号、1 笔 D+1 模拟成交、期末净值
+  129436.17、运行指纹
+  `f0086bb9b515baa9f6efd2cc60cdaca822fe5c26c3b809b71b3148bd7191b823`。
+- Core 依赖边界检查未发现 FastAPI、SQLAlchemy、Redis、Celery、BaoStock、
+  AkShare 或 Tushare 导入。
