@@ -11,13 +11,22 @@ from starlette.exceptions import HTTPException
 from starlette.middleware.base import RequestResponseEndpoint
 from starlette.responses import Response
 
-from asharelens.server.errors import http_error_handler
+from asharelens.server.errors import (
+    ApiProblem,
+    api_problem_handler,
+    http_error_handler,
+)
 from asharelens.server.models import HealthResponse
+from asharelens.server.routes.research import build_research_router
+from asharelens.server.services.research import ResearchService
 
 _REQUEST_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._:-]{0,63}")
 
 
-def create_app() -> FastAPI:
+def create_app(
+    *,
+    research_service: ResearchService | None = None,
+) -> FastAPI:
     """Construct one side-effect-free local API application."""
 
     app = FastAPI(
@@ -29,6 +38,11 @@ def create_app() -> FastAPI:
         openapi_url="/api/openapi.json",
     )
     app.add_exception_handler(HTTPException, http_error_handler)
+    app.add_exception_handler(ApiProblem, api_problem_handler)
+    app.include_router(
+        build_research_router(research_service or ResearchService()),
+        tags=["research"],
+    )
 
     @app.middleware("http")
     async def request_identity(

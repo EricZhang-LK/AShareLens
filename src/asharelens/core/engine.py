@@ -199,6 +199,12 @@ class DailyCycleEngine[ParamsT: BaseModel]:
             self.params.model_dump(mode="json"),
             build_data_snapshot_id(bars),
             ENGINE_VERSION,
+            {
+                "execution_model": self.execution_model.model_dump(mode="json"),
+                "initial_cash": self.initial_cash,
+                "max_weight": self.max_weight,
+                "top_n": self.top_n,
+            },
         )
         return BacktestResult(
             candidates=tuple(candidate_ledger),
