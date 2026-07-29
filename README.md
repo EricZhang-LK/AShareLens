@@ -2,7 +2,8 @@
 
 开箱即用、可解释、可复现的本地 A 股量化选股平台。
 
-> 当前处于早期开发阶段。仓库首先交付使用确定性合成行情运行的核心闭环，真实数据、Web 和 Docker 能力将按公开路线图逐步加入。
+> 当前处于早期开发阶段。仓库已经具备确定性离线闭环、BaoStock Provider、
+> MySQL 持久化和可恢复 Runner；AkShare、Tushare、Web 与 Docker 能力仍在开发。
 
 ## 项目原则
 
@@ -59,6 +60,28 @@ $env:ASHARELENS_DATABASE_URL = "mysql+pymysql://user:password@127.0.0.1:3306/ash
 ```
 
 正式升级必须先备份 MySQL，再执行迁移；迁移失败时不得启动新版本服务。
+
+## 持久任务 Runner
+
+首发 Runner 使用 MySQL 任务表，不要求 Redis 或 Celery。任务通过租约和心跳识别
+失联 Worker，采用至少一次交付，并由任务幂等键、运行指纹和业务唯一约束防止重复
+效果。只有在多机高并发或分钟级任务成为实际瓶颈时，才需要增加其他队列适配器。
+
+```powershell
+# 检查数据库、迁移版本和队列积压
+.\.venv\Scripts\python.exe -m asharelens.cli runner doctor
+
+# 运维或测试：分别执行一个轮次
+.\.venv\Scripts\python.exe -m asharelens.cli runner schedule --once
+.\.venv\Scripts\python.exe -m asharelens.cli runner work --once
+.\.venv\Scripts\python.exe -m asharelens.cli runner reap --once
+
+# Docker Runner 的单进程协调入口；收到 SIGINT/SIGTERM 后不再领取新任务
+.\.venv\Scripts\python.exe -m asharelens.cli runner start
+```
+
+每日模拟账户和历史回测调用同一个 `DailyCycleEngine`。每个模拟日期会保存策略版本、
+参数、精确数据分区、输入/输出状态哈希、解释型候选、订单、成交和净值。
 
 完整设计见
 [`docs/superpowers/specs/2026-07-29-asharelens-platform-design.md`](docs/superpowers/specs/2026-07-29-asharelens-platform-design.md)。

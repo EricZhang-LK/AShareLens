@@ -154,11 +154,11 @@ Commit: `feat: run daily simulation on shared engine`
 - Modify: `.github/workflows/ci.yml`
 - Modify: `docs/superpowers/plans/2026-07-29-durable-runner.md`
 
-- [ ] **Step 1: Add `runner work`, `runner reap`, `runner schedule` and `runner doctor`**
+- [x] **Step 1: Add `runner work`, `runner reap`, `runner schedule` and `runner doctor`**
 
 Commands must support one-shot mode for tests and long-running mode for Docker. Graceful shutdown must stop claiming new work, then finish or release the active lease.
 
-- [ ] **Step 2: Run phase verification**
+- [x] **Step 2: Run phase verification**
 
 ```text
 python -m pytest --cov=asharelens --cov-report=term-missing
@@ -167,6 +167,15 @@ python -m mypy src
 python -m build --no-isolation
 ```
 
-- [ ] **Step 3: Record evidence and commit**
+- [x] **Step 3: Record evidence and commit**
 
 Commit: `docs: record durable runner verification`
+
+## Verification Evidence
+
+- 2026-07-29：`pytest --cov=asharelens` 收集 103 项，101 项通过，2 项真实 MySQL 8.4 测试因本机未配置测试数据库而跳过；总覆盖率 89%。
+- Runner 状态机覆盖幂等投递、优先级领取、租约所有权、心跳、退避重试、永久失败、凭据脱敏和过期租约恢复。
+- 每日模拟逐日重放得到的候选、订单、成交和净值与 `DailyCycleEngine.run` 完全相等。
+- `ruff check .` 通过；`mypy src` 严格检查 35 个源文件通过。
+- 源码包和 wheel 构建成功；`runner` CLI 暴露 `doctor`、`work`、`start`、`schedule`、`reap`。
+- MySQL `SKIP LOCKED` 并发领取测试已进入 `mysql:8.4` CI 作业；本机无 Docker/MySQL，因此仍不声称本地完成真实 MySQL 运行时验证。
