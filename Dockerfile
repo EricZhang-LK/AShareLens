@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 
-FROM node:24-bookworm-slim AS web-build
+FROM node:26-bookworm-slim AS web-build
 WORKDIR /build/web
 COPY web/package.json web/package-lock.json ./
 RUN npm ci
