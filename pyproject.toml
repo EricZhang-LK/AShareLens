@@ -43,7 +43,7 @@ server = [
   "fastapi>=0.135,<0.137",
   "pymysql>=1.1,<2",
   "sqlalchemy>=2.0.36,<3",
-  "starlette>=0.46,<1",
+  "starlette>=0.46,<2",
   "uvicorn[standard]>=0.34,<1",
 ]
 dev = [
@@ -58,7 +58,7 @@ dev = [
   "pytest-cov>=5,<7",
   "ruff>=0.6,<1",
   "sqlalchemy>=2.0.36,<3",
-  "starlette>=0.46,<1",
+  "starlette>=0.46,<2",
   "uvicorn[standard]>=0.34,<1",
 ]
 
