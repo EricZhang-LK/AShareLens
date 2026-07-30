@@ -15,7 +15,7 @@ jobs:
       run:
         working-directory: web
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
           node-version: "24"
@@ -37,7 +37,7 @@ jobs:
       matrix:
         python-version: ["3.12", "3.13"]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
@@ -76,7 +76,7 @@ jobs:
       ASHARELENS_DATABASE_URL: mysql+pymysql://asharelens:asharelens-test-password@127.0.0.1:3306/asharelens_test?charset=utf8mb4
       ASHARELENS_TEST_DATABASE_URL: mysql+pymysql://asharelens:asharelens-test-password@127.0.0.1:3306/asharelens_test?charset=utf8mb4
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -91,7 +91,7 @@ jobs:
     env:
       ASHARELENS_IMAGE_TAG: ci
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Validate Compose model
         run: docker compose config --quiet
       - name: Build production image
